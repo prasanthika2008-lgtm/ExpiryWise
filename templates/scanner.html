@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -11,6 +12,11 @@
     >
 
     <title>ExpiryWise Scanner</title>
+
+
+    <script
+        src="https://unpkg.com/html5-qrcode"
+    ></script>
 
 
     <style>
@@ -27,67 +33,66 @@
         }
 
         header {
-            background: linear-gradient(135deg, #1b5e20, #43a047);
+            background: linear-gradient(135deg, #2e7d32, #43a047);
             color: white;
-            padding: 30px 20px;
             text-align: center;
+            padding: 35px 20px;
         }
 
         header h1 {
             margin: 0;
-            font-size: 32px;
+            font-size: 36px;
+        }
+
+        header p {
+            margin-top: 10px;
+            font-size: 17px;
         }
 
         .container {
-            width: 92%;
-            max-width: 650px;
-            margin: 30px auto;
+            width: 90%;
+            max-width: 700px;
+            margin: 35px auto;
         }
 
         .box {
             background: white;
             padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
         #reader {
             width: 100%;
-            margin: 20px auto;
+            margin-top: 20px;
         }
 
         .result {
             background: #e8f5e9;
             padding: 15px;
             border-radius: 10px;
-            margin-top: 15px;
-            word-break: break-word;
-        }
-
-        .form-box {
+            margin-top: 20px;
             display: none;
         }
 
-        label {
-            display: block;
-            margin-top: 15px;
-            margin-bottom: 6px;
-            font-weight: bold;
+        .result h3 {
+            margin-top: 0;
+            color: #2e7d32;
         }
 
         input {
             width: 100%;
             padding: 13px;
+            margin-top: 10px;
             border: 1px solid #ccc;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         button {
             width: 100%;
-            margin-top: 20px;
             padding: 13px;
+            margin-top: 15px;
             border: none;
             border-radius: 8px;
             background: #2e7d32;
@@ -100,24 +105,27 @@
             background: #256628;
         }
 
-        .back-btn {
+        .back {
             display: block;
             text-align: center;
-            margin-top: 15px;
-            padding: 13px;
             background: #555;
             color: white;
-            text-decoration: none;
+            padding: 13px;
+            margin-top: 20px;
             border-radius: 8px;
+            text-decoration: none;
         }
 
-        .back-btn:hover {
+        .back:hover {
             background: #333;
         }
 
-        .barcode {
-            font-weight: bold;
-            color: #1565c0;
+        .note {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            line-height: 1.5;
         }
 
     </style>
@@ -132,9 +140,7 @@
 
     <h1>📷 ExpiryWise Scanner</h1>
 
-    <p>
-        Scan a product barcode
-    </p>
+    <p>Scan a product barcode</p>
 
 </header>
 
@@ -142,13 +148,9 @@
 <div class="container">
 
 
-    <!-- SCANNER -->
-
     <div class="box">
 
-        <h2>
-            📷 Scan Product
-        </h2>
+        <h2>📷 Scan Product</h2>
 
         <p>
             Allow camera access and point it at a barcode.
@@ -159,170 +161,112 @@
 
 
         <div
-            id="result"
             class="result"
+            id="result"
         >
-            Waiting for barcode...
+
+            <h3>✅ Barcode Detected!</h3>
+
+            <p>
+                Barcode:
+                <strong id="barcode"></strong>
+            </p>
+
+
+            <form method="POST" action="/">
+
+                <input
+                    type="text"
+                    name="name"
+                    id="productName"
+                    placeholder="Enter product name"
+                    required
+                >
+
+
+                <input
+                    type="date"
+                    name="expiry_date"
+                    required
+                >
+
+
+                <button type="submit">
+                    ➕ Add Scanned Product
+                </button>
+
+            </form>
+
+
         </div>
 
-    </div>
+
+        <div class="note">
+
+            💡 <strong>Note:</strong>
+
+            The scanner reads the barcode number.
+            You still enter the product name and expiry date
+            because this version does not automatically identify
+            the expiry date from the barcode.
+
+        </div>
 
 
-
-    <!-- PRODUCT FORM -->
-
-    <div
-        id="formBox"
-        class="box form-box"
-    >
-
-        <h2>
-            📦 Product Details
-        </h2>
-
-
-        <p>
-
-            Barcode:
-
-            <span
-                id="barcodeValue"
-                class="barcode"
-            >
-            </span>
-
-        </p>
-
-
-        <form
-            method="POST"
-            action="/scanner/add"
+        <a
+            href="/"
+            class="back"
         >
-
-
-            <input
-                type="hidden"
-                id="barcodeInput"
-                name="barcode"
-            >
-
-
-            <label>
-                Product Name
-            </label>
-
-            <input
-                type="text"
-                name="name"
-                id="productName"
-                placeholder="Example: Milk"
-                required
-            >
-
-
-            <label>
-                Expiry Date
-            </label>
-
-            <input
-                type="date"
-                name="expiry_date"
-                required
-            >
-
-
-            <button type="submit">
-                💾 Add Product
-            </button>
-
-        </form>
+            ← Back to Dashboard
+        </a>
 
     </div>
-
-
-
-    <a
-        href="/"
-        class="back-btn"
-    >
-        ← Back to Dashboard
-    </a>
 
 
 </div>
 
 
-
-<script src="https://unpkg.com/html5-qrcode"></script>
-
-
 <script>
 
-    let scanned = false;
+function onScanSuccess(decodedText, decodedResult) {
+
+    document.getElementById("barcode").innerText =
+        decodedText;
+
+    document.getElementById("productName").value =
+        "Scanned Product";
+
+    document.getElementById("result").style.display =
+        "block";
+
+}
 
 
-    function onScanSuccess(decodedText, decodedResult) {
+function onScanFailure(error) {
 
-        if (scanned) {
-            return;
-        }
+    // Keep scanning until a barcode is found.
 
-        scanned = true;
+}
 
 
-        document.getElementById("result").innerHTML =
-            "✅ Barcode detected!<br><br>" +
-            "Barcode: <strong>" +
-            decodedText +
-            "</strong>";
-
-
-        document.getElementById("barcodeValue").innerText =
-            decodedText;
-
-
-        document.getElementById("barcodeInput").value =
-            decodedText;
-
-
-        document.getElementById("formBox").style.display =
-            "block";
-
-
-        document.getElementById("productName").focus();
-
-
-        scanner.clear();
-
-    }
-
-
-    function onScanFailure(error) {
-
-        // Continue scanning.
-
-    }
-
-
-    const scanner =
-        new Html5QrcodeScanner(
-            "reader",
-            {
-                fps: 10,
-
-                qrbox: {
-                    width: 250,
-                    height: 250
-                }
-            },
-            false
-        );
-
-
-    scanner.render(
-        onScanSuccess,
-        onScanFailure
+let scanner =
+    new Html5QrcodeScanner(
+        "reader",
+        {
+            fps: 10,
+            qrbox: {
+                width: 250,
+                height: 150
+            }
+        },
+        false
     );
+
+
+scanner.render(
+    onScanSuccess,
+    onScanFailure
+);
 
 </script>
 

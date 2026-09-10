@@ -1,27 +1,28 @@
 def get_recommendation(name, days_left):
-
     name = name.lower()
 
     if days_left < 0:
-        return f"{name.title()} has already expired. Please do not consume it."
+        return "This product has expired. Please avoid consuming it."
 
-    elif days_left == 0:
-        return f"{name.title()} expires today. Use it immediately if it is still safe."
+    if days_left == 0:
+        return "This product expires today. Please use it immediately."
 
-    elif days_left <= 2:
-        return f"{name.title()} expires very soon. Try to use it today or tomorrow."
+    if days_left <= 2:
+        return "Use this product very soon to avoid food waste."
 
-    elif days_left <= 5:
-        return f"{name.title()} is expiring soon. Plan a meal or use it before the expiry date."
+    if days_left <= 5:
+        return "This product is expiring soon. Consider using it in your next meal."
 
-    elif name == "milk":
-        return "Milk is still safe. You can use it for tea, coffee, curd or other recipes."
+    if "milk" in name:
+        return "You can use milk for tea, coffee, smoothies or cooking."
 
-    elif name == "bread":
-        return "Bread is still safe. Consider making sandwiches or toast before it expires."
+    if "bread" in name:
+        return "You can use bread for sandwiches, toast or bread-based recipes."
 
-    elif name == "rice":
-        return "Rice has plenty of time left. Store it properly in a dry place."
+    if "rice" in name:
+        return "You can use rice for fried rice, lemon rice or other meals."
 
-    else:
-        return f"{name.title()} is safe for now. Keep checking its expiry date."
+    if "vegetable" in name or "carrot" in name or "tomato" in name:
+        return "Consider using this vegetable in your next meal."
+
+    return "This product is still safe. Keep checking its expiry date."

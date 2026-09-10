@@ -2,343 +2,390 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>ExpiryWise</title>
-
-    <style>
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f7f6;
-            color: #222;
-        }
-
-        header {
-            background: #2e7d32;
-            color: white;
-            padding: 28px 20px;
-            text-align: center;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 34px;
-        }
-
-        header p {
-            margin: 8px 0 0;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 1150px;
-            margin: 30px auto;
-        }
-
-        /* ADD PRODUCT */
-
-        .add-box {
-            background: white;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
-        }
-
-        .add-box h2 {
-            margin-top: 0;
-        }
-
-        form {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        input,
-        select {
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 15px;
-        }
-
-        form input {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            background: #2e7d32;
-            color: white;
-            cursor: pointer;
-            font-size: 15px;
-        }
-
-        button:hover {
-            background: #256628;
-        }
-
-        /* STATISTICS */
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-            text-align: center;
-        }
-
-        .stat-card .icon {
-            font-size: 28px;
-        }
-
-        .stat-card h3 {
-            margin: 8px 0;
-            font-size: 28px;
-        }
-
-        .stat-card p {
-            margin: 0;
-            color: #666;
-        }
-
-        .safe-stat h3 {
-            color: #2e7d32;
-        }
-
-        .soon-stat h3 {
-            color: #f57c00;
-        }
-
-        .expired-stat h3 {
-            color: #d32f2f;
-        }
-
-        /* REMINDER */
-
-        .reminder {
-            background: #fff3cd;
-            border-left: 6px solid #ff9800;
-            padding: 18px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-        }
-
-        .reminder h2 {
-            margin-top: 0;
-            color: #d97706;
-        }
-
-        /* SEARCH */
-
-        .tools {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 220px;
-        }
-
-        .filter-box {
-            min-width: 180px;
-        }
-
-        /* PRODUCTS */
-
-        .products-title {
-            margin-bottom: 15px;
-        }
-
-        .products {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-            transition: transform 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-        }
-
-        .card h3 {
-            margin-top: 0;
-            font-size: 23px;
-        }
-
-        .days {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .safe {
-            color: #2e7d32;
-            font-weight: bold;
-        }
-
-        .soon {
-            color: #f57c00;
-            font-weight: bold;
-        }
-
-        .expired {
-            color: #d32f2f;
-            font-weight: bold;
-        }
-
-        /* RECOMMENDATION */
-
-        .recommendation {
-            background: #f1f8e9;
-            border-left: 5px solid #66bb6a;
-            padding: 12px;
-            margin-top: 15px;
-            border-radius: 8px;
-        }
-
-        .recommendation strong {
-            color: #2e7d32;
-        }
-
-        /* BUTTONS */
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .edit-btn,
-        .delete-btn {
-            padding: 9px 14px;
-            border-radius: 7px;
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .edit-btn {
-            background: #1976d2;
-        }
-
-        .edit-btn:hover {
-            background: #125ca1;
-        }
-
-        .delete-btn {
-            background: #d32f2f;
-        }
-
-        .delete-btn:hover {
-            background: #b71c1c;
-        }
-
-        .empty {
-            background: white;
-            padding: 35px;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        /* SCANNER */
-
-        .scanner-link {
-            display: inline-block;
-            margin-top: 15px;
-            background: #1565c0;
-            color: white;
-            padding: 11px 18px;
-            border-radius: 8px;
-            text-decoration: none;
-        }
-
-        .scanner-link:hover {
-            background: #0d47a1;
-        }
-
-        /* MOBILE */
-
-        @media (max-width: 800px) {
-
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-        }
-
-        @media (max-width: 600px) {
-
-            .container {
-                width: 94%;
-            }
-
-            .stats {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            form {
-                flex-direction: column;
-            }
-
-            form input,
-            form button {
-                width: 100%;
-            }
-
-            .tools {
-                flex-direction: column;
-            }
-
-            .search-box,
-            .filter-box {
-                width: 100%;
-            }
-
-            header h1 {
-                font-size: 28px;
-            }
-
-        }
-
-    </style>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>ExpiryWise</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+
+    margin: 0;
+
+    font-family: Arial, sans-serif;
+
+    background: #f4f7f6;
+
+    color: #222;
+}
+
+
+/* HEADER */
+
+header {
+
+    background: #2e7d32;
+
+    color: white;
+
+    padding: 30px;
+
+    text-align: center;
+}
+
+header h1 {
+
+    margin: 0;
+
+    font-size: 38px;
+}
+
+header p {
+
+    margin-top: 8px;
+
+    font-size: 18px;
+}
+
+
+/* CONTAINER */
+
+.container {
+
+    width: 90%;
+
+    max-width: 1100px;
+
+    margin: 30px auto;
+}
+
+
+/* ADD BOX */
+
+.add-box {
+
+    background: white;
+
+    padding: 25px;
+
+    border-radius: 15px;
+
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+
+    margin-bottom: 25px;
+}
+
+.add-box h2 {
+
+    margin-top: 0;
+}
+
+
+/* FORM */
+
+form {
+
+    display: flex;
+
+    gap: 15px;
+
+    flex-wrap: wrap;
+}
+
+input,
+select {
+
+    padding: 12px;
+
+    border: 1px solid #ccc;
+
+    border-radius: 8px;
+
+    font-size: 15px;
+}
+
+button {
+
+    padding: 12px 20px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #2e7d32;
+
+    color: white;
+
+    cursor: pointer;
+
+    font-size: 15px;
+}
+
+button:hover {
+
+    background: #256628;
+}
+
+
+/* SEARCH */
+
+.search-box {
+
+    background: white;
+
+    padding: 20px;
+
+    border-radius: 15px;
+
+    margin-bottom: 25px;
+
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+
+/* STATS */
+
+.stats {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(180px, 1fr));
+
+    gap: 15px;
+
+    margin-bottom: 30px;
+}
+
+.stat {
+
+    background: white;
+
+    padding: 20px;
+
+    border-radius: 15px;
+
+    text-align: center;
+
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.stat h3 {
+
+    margin: 0;
+
+    font-size: 28px;
+}
+
+
+/* REMINDER */
+
+.reminder {
+
+    background: #fff3cd;
+
+    border-left: 6px solid #ff9800;
+
+    padding: 18px;
+
+    border-radius: 10px;
+
+    margin-bottom: 25px;
+}
+
+.reminder h2 {
+
+    margin-top: 0;
+
+    color: #d97706;
+}
+
+
+/* PRODUCTS */
+
+.products {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(280px, 1fr));
+
+    gap: 20px;
+}
+
+
+/* CARD */
+
+.card {
+
+    background: white;
+
+    padding: 20px;
+
+    border-radius: 15px;
+
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.card h3 {
+
+    margin-top: 0;
+
+    font-size: 22px;
+}
+
+
+/* STATUS */
+
+.safe {
+
+    color: #2e7d32;
+
+    font-weight: bold;
+}
+
+.soon {
+
+    color: #f57c00;
+
+    font-weight: bold;
+}
+
+.expired {
+
+    color: #d32f2f;
+
+    font-weight: bold;
+}
+
+
+/* BUTTONS */
+
+.actions {
+
+    margin-top: 15px;
+
+    display: flex;
+
+    gap: 10px;
+}
+
+.edit-btn {
+
+    background: #1976d2;
+
+    color: white;
+
+    padding: 9px 15px;
+
+    border-radius: 7px;
+
+    text-decoration: none;
+}
+
+.delete-btn {
+
+    background: #d32f2f;
+
+    color: white;
+
+    padding: 9px 15px;
+
+    border-radius: 7px;
+
+    text-decoration: none;
+}
+
+.scanner-btn {
+
+    display: inline-block;
+
+    background: #6a1b9a;
+
+    color: white;
+
+    padding: 12px 20px;
+
+    border-radius: 8px;
+
+    text-decoration: none;
+
+    margin-top: 10px;
+}
+
+
+/* RECOMMENDATION */
+
+.recommendation {
+
+    background: #e8f5e9;
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    margin-top: 12px;
+}
+
+
+/* EMPTY */
+
+.empty {
+
+    background: white;
+
+    padding: 30px;
+
+    border-radius: 15px;
+
+    text-align: center;
+}
+
+
+/* MOBILE */
+
+@media(max-width:600px) {
+
+    .container {
+
+        width: 94%;
+    }
+
+    form {
+
+        flex-direction: column;
+    }
+
+    input,
+    select,
+    button {
+
+        width: 100%;
+    }
+
+}
+
+</style>
 
 </head>
 
+
 <body>
+
 
 <header>
 
-    <h1>ExpiryWise</h1>
+<h1>ExpiryWise</h1>
 
-    <p>Never miss an expiry date again 🌱</p>
+<p>Never miss an expiry date again</p>
 
 </header>
 
@@ -346,337 +393,326 @@
 <div class="container">
 
 
-    <!-- ADD PRODUCT -->
+<!-- ADD PRODUCT -->
 
-    <div class="add-box">
+<div class="add-box">
 
-        <h2>➕ Add a Product</h2>
+<h2>➕ Add a Product</h2>
 
-        <form method="POST">
+<form method="POST">
 
-            <input
-                type="text"
-                name="name"
-                placeholder="Product name"
-                required
-            >
+<input
+    type="text"
+    name="name"
+    placeholder="Product name"
+    required
+>
 
-            <input
-                type="date"
-                name="expiry_date"
-                required
-            >
+<input
+    type="date"
+    name="expiry_date"
+    required
+>
 
-            <button type="submit">
-                Add Product
-            </button>
+<button type="submit">
+    Add Product
+</button>
 
-        </form>
+</form>
 
-        <a href="/scanner" class="scanner-link">
-            📷 Open Barcode Scanner
-        </a>
 
-    </div>
+<a class="scanner-btn"
+   href="/scanner">
 
+📷 Open Barcode Scanner
 
-    <!-- STATISTICS -->
-
-    {% set total = products|length %}
-    {% set safe_count = 0 %}
-    {% set soon_count = 0 %}
-    {% set expired_count = 0 %}
-
-    {% for product in products %}
-
-        {% if product.status == "Safe" %}
-            {% set safe_count = safe_count + 1 %}
-        {% elif product.status == "Expiring Soon" %}
-            {% set soon_count = soon_count + 1 %}
-        {% elif product.status == "Expired" %}
-            {% set expired_count = expired_count + 1 %}
-        {% endif %}
-
-    {% endfor %}
-
-
-    <div class="stats">
-
-        <div class="stat-card">
-            <div class="icon">📦</div>
-            <h3>{{ total }}</h3>
-            <p>Total Products</p>
-        </div>
-
-        <div class="stat-card safe-stat">
-            <div class="icon">🟢</div>
-            <h3>{{ safe_count }}</h3>
-            <p>Safe</p>
-        </div>
-
-        <div class="stat-card soon-stat">
-            <div class="icon">🟠</div>
-            <h3>{{ soon_count }}</h3>
-            <p>Expiring Soon</p>
-        </div>
-
-        <div class="stat-card expired-stat">
-            <div class="icon">🔴</div>
-            <h3>{{ expired_count }}</h3>
-            <p>Expired</p>
-        </div>
-
-    </div>
-
-
-    <!-- REMINDER -->
-
-    {% if soon_count > 0 %}
-
-    <div class="reminder">
-
-        <h2>⚠️ Expiry Reminder</h2>
-
-        <p>
-            You have <strong>{{ soon_count }}</strong>
-            product(s) expiring within 5 days.
-            Please use them soon!
-        </p>
-
-    </div>
-
-    {% endif %}
-
-
-    <!-- SEARCH + FILTER -->
-
-    <div class="tools">
-
-        <input
-            type="text"
-            id="searchInput"
-            class="search-box"
-            placeholder="🔍 Search products..."
-            onkeyup="searchProducts()"
-        >
-
-        <select
-            id="filterSelect"
-            class="filter-box"
-            onchange="filterProducts()"
-        >
-
-            <option value="All">All Products</option>
-            <option value="Safe">Safe</option>
-            <option value="Expiring Soon">Expiring Soon</option>
-            <option value="Expired">Expired</option>
-
-        </select>
-
-    </div>
-
-
-    <!-- PRODUCTS -->
-
-    <h2 class="products-title">
-        🛒 My Products
-    </h2>
-
-
-    {% if products %}
-
-    <div class="products" id="productContainer">
-
-        {% for product in products %}
-
-        <div
-            class="card product-card"
-            data-name="{{ product.name|lower }}"
-            data-status="{{ product.status }}"
-        >
-
-            <h3>
-
-                {% if product.name|lower == "milk" %}
-                    🥛
-                {% elif product.name|lower == "bread" %}
-                    🍞
-                {% elif product.name|lower == "rice" %}
-                    🍚
-                {% elif product.name|lower == "egg" %}
-                    🥚
-                {% else %}
-                    📦
-                {% endif %}
-
-                {{ product.name }}
-
-            </h3>
-
-
-            <p>
-                <strong>📅 Expiry Date:</strong>
-                {{ product.expiry_date }}
-            </p>
-
-
-            <p class="days">
-
-                {% if product.days_left < 0 %}
-
-                    🔴 Expired
-
-                {% elif product.days_left == 0 %}
-
-                    🔴 Expires today
-
-                {% else %}
-
-                    {{ product.days_left }} days left
-
-                {% endif %}
-
-            </p>
-
-
-            {% if product.status == "Safe" %}
-
-                <p class="safe">
-                    ✓ Safe
-                </p>
-
-            {% elif product.status == "Expiring Soon" %}
-
-                <p class="soon">
-                    ⚠ Expiring Soon
-                </p>
-
-            {% else %}
-
-                <p class="expired">
-                    ✕ Expired
-                </p>
-
-            {% endif %}
-
-
-            {% if product.recommendation %}
-
-            <div class="recommendation">
-
-                <strong>💡 Recommendation</strong>
-
-                <p>
-                    {{ product.recommendation }}
-                </p>
-
-            </div>
-
-            {% endif %}
-
-
-            <div class="actions">
-
-                <a
-                    class="edit-btn"
-                    href="/edit/{{ product.id }}"
-                >
-                    ✏️ Edit
-                </a>
-
-                <a
-                    class="delete-btn"
-                    href="/delete/{{ product.id }}"
-                    onclick="return confirm('Are you sure you want to delete this product?');"
-                >
-                    🗑 Delete
-                </a>
-
-            </div>
-
-        </div>
-
-        {% endfor %}
-
-    </div>
-
-    {% else %}
-
-    <div class="empty">
-
-        <h3>No products yet 📦</h3>
-
-        <p>Add your first product above.</p>
-
-    </div>
-
-    {% endif %}
-
+</a>
 
 </div>
 
 
-<script>
+<!-- SEARCH -->
 
-function searchProducts() {
+<div class="search-box">
 
-    let input =
-        document.getElementById("searchInput")
-        .value
-        .toLowerCase();
+<h2>🔎 Search & Filter</h2>
 
-    let cards =
-        document.querySelectorAll(".product-card");
+<form method="GET">
 
-    cards.forEach(function(card) {
+<input
+    type="text"
+    name="search"
+    placeholder="Search product..."
+    value="{{ request.args.get('search', '') }}"
+>
 
-        let name =
-            card.getAttribute("data-name");
+<select name="status">
 
-        if (name.includes(input)) {
+<option value="">
+    All Products
+</option>
 
-            card.style.display = "";
+<option value="Safe"
+{% if request.args.get('status') == 'Safe' %}
+selected
+{% endif %}>
+    Safe
+</option>
 
-        } else {
+<option value="Expiring Soon"
+{% if request.args.get('status') == 'Expiring Soon' %}
+selected
+{% endif %}>
+    Expiring Soon
+</option>
 
-            card.style.display = "none";
+<option value="Expired"
+{% if request.args.get('status') == 'Expired' %}
+selected
+{% endif %}>
+    Expired
+</option>
 
-        }
+</select>
 
-    });
+<button type="submit">
+    Search
+</button>
 
-}
+</form>
+
+</div>
 
 
-function filterProducts() {
+<!-- STATISTICS -->
 
-    let filter =
-        document.getElementById("filterSelect").value;
+<div class="stats">
 
-    let cards =
-        document.querySelectorAll(".product-card");
+<div class="stat">
 
-    cards.forEach(function(card) {
+<h3>{{ total }}</h3>
 
-        let status =
-            card.getAttribute("data-status");
+<p>Total Products</p>
 
-        if (filter === "All" || status === filter) {
+</div>
 
-            card.style.display = "";
 
-        } else {
+<div class="stat">
 
-            card.style.display = "none";
+<h3>{{ safe_count }}</h3>
 
-        }
+<p>✓ Safe</p>
 
-    });
+</div>
 
-}
 
-</script>
+<div class="stat">
 
+<h3>{{ soon_count }}</h3>
+
+<p>⚠ Expiring Soon</p>
+
+</div>
+
+
+<div class="stat">
+
+<h3>{{ expired_count }}</h3>
+
+<p>✕ Expired</p>
+
+</div>
+
+</div>
+
+
+<!-- REMINDER -->
+
+{% set reminder_count = 0 %}
+
+{% for product in products %}
+
+{% if product.status == "Expiring Soon" %}
+
+{% set reminder_count = reminder_count + 1 %}
+
+{% endif %}
+
+{% endfor %}
+
+
+{% if reminder_count > 0 %}
+
+<div class="reminder">
+
+<h2>⚠️ Expiry Reminder</h2>
+
+<p>
+Some products are expiring within 5 days.
+Please use them soon!
+</p>
+
+</div>
+
+{% endif %}
+
+
+<!-- PRODUCTS -->
+
+<h2>🛒 My Products</h2>
+
+
+{% if products %}
+
+<div class="products">
+
+
+{% for product in products %}
+
+<div class="card">
+
+
+<h3>
+
+{% if product.name|lower == "milk" %}
+
+🥛
+
+{% elif product.name|lower == "bread" %}
+
+🍞
+
+{% elif product.name|lower == "rice" %}
+
+🍚
+
+{% else %}
+
+📦
+
+{% endif %}
+
+{{ product.name }}
+
+</h3>
+
+
+<p>
+
+<strong>Expiry Date:</strong>
+
+{{ product.expiry_date }}
+
+</p>
+
+
+<p>
+
+<strong>Days Left:</strong>
+
+{% if product.days_left < 0 %}
+
+Expired
+
+{% elif product.days_left == 0 %}
+
+Expires today
+
+{% else %}
+
+{{ product.days_left }} days
+
+{% endif %}
+
+</p>
+
+
+{% if product.status == "Safe" %}
+
+<p class="safe">
+
+✓ Safe
+
+</p>
+
+{% elif product.status == "Expiring Soon" %}
+
+<p class="soon">
+
+⚠ Expiring Soon
+
+</p>
+
+{% else %}
+
+<p class="expired">
+
+✕ Expired
+
+</p>
+
+{% endif %}
+
+
+<!-- RECOMMENDATION -->
+
+<div class="recommendation">
+
+<strong>💡 Recommendation</strong>
+
+<p>
+{{ product.recommendation }}
+</p>
+
+</div>
+
+
+<!-- ACTIONS -->
+
+<div class="actions">
+
+<a
+    class="edit-btn"
+    href="/edit/{{ product.id }}"
+>
+✏ Edit
+</a>
+
+
+<a
+    class="delete-btn"
+    href="/delete/{{ product.id }}"
+    onclick="return confirm('Are you sure you want to delete this product?');"
+>
+🗑 Delete
+</a>
+
+</div>
+
+
+</div>
+
+{% endfor %}
+
+</div>
+
+
+{% else %}
+
+<div class="empty">
+
+<h3>No products found 📦</h3>
+
+<p>
+Try adding a product or changing your search.
+</p>
+
+</div>
+
+{% endif %}
+
+
+</div>
 
 </body>
 
