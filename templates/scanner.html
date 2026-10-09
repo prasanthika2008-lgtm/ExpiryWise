@@ -150,126 +150,113 @@
 
     <div class="box">
 
-        <h2>📷 Scan Product</h2>
+    <h2>📷 Scan Product</h2>
+    <p>Allow camera access and point it at a barcode. The product name is looked up automatically.</p>
 
-        <p>
-            Allow camera access and point it at a barcode.
-        </p>
+    <div id="reader"></div>
 
+    <div class="result" id="result">
 
-        <div id="reader"></div>
+        <h3>✅ Barcode Detected!</h3>
+        <p>Barcode: <strong id="barcode"></strong></p>
+        <p id="lookupStatus" style="margin:6px 0;"></p>
 
+        <form method="POST" action="/">
 
-        <div
-            class="result"
-            id="result"
-        >
+            <input type="hidden" name="barcode" id="barcodeField">
 
-            <h3>✅ Barcode Detected!</h3>
+            <input type="text" name="name" id="productName"
+                   placeholder="Product name" maxlength="100" required>
 
-            <p>
-                Barcode:
-                <strong id="barcode"></strong>
-            </p>
+            <select name="category" id="categoryField"
+                    style="width:100%;padding:13px;margin-top:10px;border:1px solid #ccc;border-radius:8px;font-size:15px;">
+                {% for c in categories %}
+                <option value="{{ c }}">{{ c }}</option>
+                {% endfor %}
+            </select>
 
+            <input type="number" name="quantity" value="1" min="1" max="999" placeholder="Quantity">
 
-            <form method="POST" action="/">
+            <label style="display:block;margin-top:14px;font-weight:bold;">Expiry date</label>
+            <input type="date" name="expiry_date" id="expiryField" required>
 
-                <input
-                    type="text"
-                    name="name"
-                    id="productName"
-                    placeholder="Enter product name"
-                    required
-                >
+            <div class="note" style="background:#e3f2fd;">
+                📸 <strong>Read expiry date from a photo:</strong> take a clear picture of the printed date.
+                <input type="file" id="photoInput" accept="image/*" capture="environment">
+                <p id="ocrStatus" style="margin:6px 0 0;"></p>
+            </div>
 
-
-                <input
-                    type="date"
-                    name="expiry_date"
-                    required
-                >
-
-
-                <button type="submit">
-                    ➕ Add Scanned Product
-                </button>
-
-            </form>
-
-
-        </div>
-
-
-        <div class="note">
-
-            💡 <strong>Note:</strong>
-
-            The scanner reads the barcode number.
-            You still enter the product name and expiry date
-            because this version does not automatically identify
-            the expiry date from the barcode.
-
-        </div>
-
-
-        <a
-            href="/"
-            class="back"
-        >
-            ← Back to Dashboard
-        </a>
+            <button type="submit">➕ Add Scanned Product</button>
+        </form>
 
     </div>
 
+    <div class="note">
+        💡 <strong>Tip:</strong> If a barcode is not in the database, or the OCR date is wrong,
+        just type the details yourself. Always check the date before saving.
+    </div>
+
+    <a href="/" class="back">← Back to Dashboard</a>
 
 </div>
 
+</div>
 
 <script>
+let handled = false;
 
-function onScanSuccess(decodedText, decodedResult) {
+async function onScanSuccess(code) {
+    if (handled) return;           // ignore repeated detections of the same barcode
+    handled = true;
 
-    document.getElementById("barcode").innerText =
-        decodedText;
+    document.getElementById("barcode").innerText = code;
+    document.getElementById("barcodeField").value = code;
+    document.getElementById("result").style.display = "block";
+    const status = document.getElementById("lookupStatus");
+    status.innerText = "🔎 Looking up product...";
 
-    document.getElementById("productName").value =
-        "Scanned Product";
-
-    document.getElementById("result").style.display =
-        "block";
-
+    try {
+        const res = await fetch("/api/barcode/" + encodeURIComponent(code));
+        const info = await res.json();
+        if (info.found) {
+            document.getElementById("productName").value = info.name;
+            document.getElementById("categoryField").value = info.category;
+            status.innerText = "✅ Found: " + info.name;
+        } else {
+            status.innerText = "Product not found. Please enter the name manually.";
+        }
+    } catch (err) {
+        status.innerText = "Lookup failed. Please enter the name manually.";
+    }
 }
 
+function onScanFailure(error) { /* keep scanning */ }
 
-function onScanFailure(error) {
+new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 150 } }, false)
+    .render(onScanSuccess, onScanFailure);
 
-    // Keep scanning until a barcode is found.
+document.getElementById("photoInput").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const status = document.getElementById("ocrStatus");
+    status.innerText = "⏳ Reading date...";
 
-}
-
-
-let scanner =
-    new Html5QrcodeScanner(
-        "reader",
-        {
-            fps: 10,
-            qrbox: {
-                width: 250,
-                height: 150
-            }
-        },
-        false
-    );
-
-
-scanner.render(
-    onScanSuccess,
-    onScanFailure
-);
-
+    const formData = new FormData();
+    formData.append("image", file);
+    try {
+        const res = await fetch("/api/ocr", { method: "POST", body: formData });
+        const data = await res.json();
+        if (data.expiry_date) {
+            document.getElementById("expiryField").value = data.expiry_date;
+            status.innerText = "✅ Detected " + data.expiry_date + ". Please confirm it is correct.";
+        } else {
+            status.innerText = data.error || "No date found. Please enter it manually.";
+        }
+    } catch (err) {
+        status.innerText = "Could not read the photo. Please enter the date manually.";
+    }
+});
 </script>
-
 
 </body>
 
