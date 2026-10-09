@@ -124,6 +124,12 @@ button {
 <h2>Update Product</h2>
 
 
+{% if error %}
+<div style="background:#fdecea;color:#b71c1c;padding:12px;border-radius:8px;margin-bottom:12px;">
+⚠ {{ error }}
+</div>
+{% endif %}
+
 <form method="POST">
 
 
