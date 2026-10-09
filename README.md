@@ -23,7 +23,7 @@ before they go to waste.
 - **Smarter recommendations:** category-aware tips and use-it-up ideas based on the product name
 - **Category filter** and **statistics API** (`/api/stats`)
 - **Input validation** and safe deletion (POST only)
-- **Automated tests:**automated tests (pytest)
+- **Automated tests:** pytest suite covering CRUD, validation, barcode lookup, OCR parsing and reminders
 
 ## Architecture
 
