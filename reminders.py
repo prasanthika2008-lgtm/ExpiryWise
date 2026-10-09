@@ -2,15 +2,18 @@
 
 Configure with environment variables (never hard-code passwords):
     SMTP_HOST   (default smtp.gmail.com)
-    SMTP_PORT   (default 465)
+    SMTP_PORT   (default 465; use 587 if 465 is blocked)
     SMTP_USER   your email address
     SMTP_PASS   an app password
     REMINDER_TO who receives the reminder (default: SMTP_USER)
 
-Run once from the command line:  python reminders.py
+Run from the command line:
+    python reminders.py            send the email
+    python reminders.py --preview  only print the email (no login needed)
 """
 import os
 import smtplib
+import sys
 from email.message import EmailMessage
 
 
@@ -54,7 +57,12 @@ def send_reminders(products):
 
     host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
     port = int(os.environ.get("SMTP_PORT", "465"))
-    with smtplib.SMTP_SSL(host, port, timeout=20) as server:
+    if port == 465:
+        server = smtplib.SMTP_SSL(host, port, timeout=20)
+    else:
+        server = smtplib.SMTP(host, port, timeout=20)
+        server.starttls()
+    with server:
         server.login(os.environ["SMTP_USER"], os.environ["SMTP_PASS"])
         server.send_message(msg)
     return True
@@ -62,6 +70,21 @@ def send_reminders(products):
 
 if __name__ == "__main__":
     from app import create_table, get_products
+
     create_table()
-    sent = send_reminders(get_products())
-    print("Reminder email sent." if sent else "Nothing to send (or SMTP not configured).")
+    products = get_products()
+
+    if "--preview" in sys.argv:
+        content = build_message(products)
+        if content is None:
+            print("No products are expiring soon or expired.")
+        else:
+            print("Subject:", content[0])
+            print()
+            print(content[1])
+    else:
+        try:
+            sent = send_reminders(products)
+            print("Reminder email sent." if sent else "Nothing to send (or SMTP not configured).")
+        except (smtplib.SMTPException, OSError) as error:
+            print(f"Could not send email: {error}")
