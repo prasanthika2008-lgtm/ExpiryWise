@@ -175,7 +175,7 @@ def test_send_skips_without_smtp(monkeypatch):
     assert reminders.send_reminders(soon) is False
 
 
-# ---------- dashboard + recipes (Phase 3) ----------
+# ---------- dashboard + recipes (Phase 2) ----------
 import recipes
 
 

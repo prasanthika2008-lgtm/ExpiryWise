@@ -1,766 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>ExpiryWise</title>
-
-<style>
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-
-    margin: 0;
-
-    font-family: Arial, sans-serif;
-
-    background: #f4f7f6;
-
-    color: #222;
-}
-
-
-/* HEADER */
-
-header {
-
-    background: #2e7d32;
-
-    color: white;
-
-    padding: 30px;
-
-    text-align: center;
-}
-
-header h1 {
-
-    margin: 0;
-
-    font-size: 38px;
-}
-
-header p {
-
-    margin-top: 8px;
-
-    font-size: 18px;
-}
-
-
-/* CONTAINER */
-
-.container {
-
-    width: 90%;
-
-    max-width: 1100px;
-
-    margin: 30px auto;
-}
-
-
-/* ADD BOX */
-
-.add-box {
-
-    background: white;
-
-    padding: 25px;
-
-    border-radius: 15px;
-
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-
-    margin-bottom: 25px;
-}
-
-.add-box h2 {
-
-    margin-top: 0;
-}
-
-
-/* FORM */
-
-form {
-
-    display: flex;
-
-    gap: 15px;
-
-    flex-wrap: wrap;
-}
-
-input,
-select {
-
-    padding: 12px;
-
-    border: 1px solid #ccc;
-
-    border-radius: 8px;
-
-    font-size: 15px;
-}
-
-button {
-
-    padding: 12px 20px;
-
-    border: none;
-
-    border-radius: 8px;
-
-    background: #2e7d32;
-
-    color: white;
-
-    cursor: pointer;
-
-    font-size: 15px;
-}
-
-button:hover {
-
-    background: #256628;
-}
-
-
-/* SEARCH */
-
-.search-box {
-
-    background: white;
-
-    padding: 20px;
-
-    border-radius: 15px;
-
-    margin-bottom: 25px;
-
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-}
-
-
-/* STATS */
-
-.stats {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(auto-fit, minmax(180px, 1fr));
-
-    gap: 15px;
-
-    margin-bottom: 30px;
-}
-
-.stat {
-
-    background: white;
-
-    padding: 20px;
-
-    border-radius: 15px;
-
-    text-align: center;
-
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-}
-
-.stat h3 {
-
-    margin: 0;
-
-    font-size: 28px;
-}
-
-
-/* REMINDER */
-
-.reminder {
-
-    background: #fff3cd;
-
-    border-left: 6px solid #ff9800;
-
-    padding: 18px;
-
-    border-radius: 10px;
-
-    margin-bottom: 25px;
-}
-
-.reminder h2 {
-
-    margin-top: 0;
-
-    color: #d97706;
-}
-
-
-/* PRODUCTS */
-
-.products {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(auto-fit, minmax(280px, 1fr));
-
-    gap: 20px;
-}
-
-
-/* CARD */
-
-.card {
-
-    background: white;
-
-    padding: 20px;
-
-    border-radius: 15px;
-
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-}
-
-.card h3 {
-
-    margin-top: 0;
-
-    font-size: 22px;
-}
-
-
-/* STATUS */
-
-.safe {
-
-    color: #2e7d32;
-
-    font-weight: bold;
-}
-
-.soon {
-
-    color: #f57c00;
-
-    font-weight: bold;
-}
-
-.expired {
-
-    color: #d32f2f;
-
-    font-weight: bold;
-}
-
-
-/* BUTTONS */
-
-.actions {
-
-    margin-top: 15px;
-
-    display: flex;
-
-    gap: 10px;
-}
-
-.edit-btn {
-
-    background: #1976d2;
-
-    color: white;
-
-    padding: 9px 15px;
-
-    border-radius: 7px;
-
-    text-decoration: none;
-}
-
-.delete-btn {
-
-    background: #d32f2f;
-
-    color: white;
-
-    padding: 9px 15px;
-
-    border-radius: 7px;
-
-    text-decoration: none;
-}
-
-.scanner-btn {
-
-    display: inline-block;
-
-    background: #6a1b9a;
-
-    color: white;
-
-    padding: 12px 20px;
-
-    border-radius: 8px;
-
-    text-decoration: none;
-
-    margin-top: 10px;
-}
-
-
-/* RECOMMENDATION */
-
-.recommendation {
-
-    background: #e8f5e9;
-
-    padding: 12px;
-
-    border-radius: 8px;
-
-    margin-top: 12px;
-}
-
-
-/* EMPTY */
-
-.empty {
-
-    background: white;
-
-    padding: 30px;
-
-    border-radius: 15px;
-
-    text-align: center;
-}
-
-
-/* MOBILE */
-
-@media(max-width:600px) {
-
-    .container {
-
-        width: 94%;
-    }
-
-    form {
-
-        flex-direction: column;
-    }
-
-    input,
-    select,
-    button {
-
-        width: 100%;
-    }
-
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpiryWise</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7f6;
+            color: #222;
+        }
+        header {
+            background: #2e7d32;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        header h1 { margin: 0; font-size: 38px; }
+        header p { margin-top: 8px; font-size: 18px; }
+        .container { width: 90%; max-width: 1100px; margin: 30px auto; }
+        .add-box, .search-box, .stat, .card, .empty {
+            background: white;
+            padding: 22px;
+            border-radius: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,.08);
+        }
+        .add-box, .search-box { margin-bottom: 25px; }
+        form { display: flex; gap: 12px; flex-wrap: wrap; }
+        input, select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        button, .button {
+            display: inline-block;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #2e7d32;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 15px;
+        }
+        button:hover, .button:hover { opacity: .88; }
+        .error {
+            background: #fdecea;
+            color: #b71c1c;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat { text-align: center; }
+        .stat h3 { margin: 0; font-size: 28px; }
+        .reminder {
+            background: #fff3cd;
+            border-left: 6px solid #ff9800;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        .reminder h2 { margin-top: 0; color: #d97706; }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .card h3 { margin-top: 0; font-size: 22px; }
+        .safe { color: #2e7d32; font-weight: bold; }
+        .soon { color: #f57c00; font-weight: bold; }
+        .expired { color: #d32f2f; font-weight: bold; }
+        .recommendation {
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        .actions { margin-top: 15px; display: flex; gap: 10px; align-items: center; }
+        .edit-btn { background: #1976d2; }
+        .delete-btn { background: #d32f2f; }
+        .scanner-btn { background: #6a1b9a; margin-right: 8px; }
+        .empty { text-align: center; }
+        @media (max-width: 600px) {
+            .container { width: 94%; }
+            form { flex-direction: column; }
+            input, select, form button { width: 100%; }
+        }
+    </style>
 </head>
-
-
 <body>
-
-
 <header>
-
-<h1>ExpiryWise</h1>
-
-<p>Never miss an expiry date again</p>
-
+    <h1>ExpiryWise</h1>
+    <p>Never miss an expiry date again</p>
 </header>
 
-
 <div class="container">
-
-
-<!-- ADD PRODUCT -->
-
-<div class="add-box">
-
-<h2>➕ Add a Product</h2>
-
-{% if error %}
-<div style="background:#fdecea;color:#b71c1c;padding:12px;border-radius:8px;margin-bottom:12px;">
-⚠ {{ error }}
-</div>
-{% endif %}
-
-<form method="POST">
-
-<input
-    type="text"
-    name="name"
-    placeholder="Product name"
-    value="{{ prefill.name }}"
-    maxlength="100"
-    required
->
-
-<input
-    type="date"
-    name="expiry_date"
-    value="{{ prefill.expiry_date }}"
-    required
->
-
-<select name="category">
-{% for c in categories %}
-<option value="{{ c }}" {% if prefill.category == c %}selected{% endif %}>{{ c }}</option>
-{% endfor %}
-</select>
-
-<input
-    type="number"
-    name="quantity"
-    value="1"
-    min="1"
-    max="999"
-    placeholder="Quantity"
->
-
-<input type="hidden" name="barcode" value="{{ prefill.barcode }}">
-
-<button type="submit">
-    Add Product
-</button>
-
-</form>
-
-
-<a class="scanner-btn"
-   href="/scanner">
-
-📷 Open Barcode Scanner
-
-</a>
-
-<a class="scanner-btn" style="background:#1565c0;margin-left:8px;"
-   href="/dashboard">
-
-📊 Dashboard
-
-</a>
-
-</div>
-
-
-<!-- SEARCH -->
-
-<div class="search-box">
-
-<h2>🔎 Search & Filter</h2>
-
-<form method="GET">
-
-<input
-    type="text"
-    name="search"
-    placeholder="Search product..."
-    value="{{ request.args.get('search', '') }}"
->
-
-<select name="status">
-
-<option value="">
-    All Products
-</option>
-
-<option value="Safe"
-{% if request.args.get('status') == 'Safe' %}
-selected
-{% endif %}>
-    Safe
-</option>
-
-<option value="Expiring Soon"
-{% if request.args.get('status') == 'Expiring Soon' %}
-selected
-{% endif %}>
-    Expiring Soon
-</option>
-
-<option value="Expired"
-{% if request.args.get('status') == 'Expired' %}
-selected
-{% endif %}>
-    Expired
-</option>
-
-</select>
-
-<select name="category">
-<option value="">All Categories</option>
-{% for c in categories %}
-<option value="{{ c }}" {% if request.args.get('category') == c %}selected{% endif %}>{{ c }}</option>
-{% endfor %}
-</select>
-
-<button type="submit">
-    Search
-</button>
-
-</form>
-
-</div>
-
-
-<!-- STATISTICS -->
-
-<div class="stats">
-
-<div class="stat">
-
-<h3>{{ total }}</h3>
-
-<p>Total Products</p>
-
-</div>
-
-
-<div class="stat">
-
-<h3>{{ safe_count }}</h3>
-
-<p>✓ Safe</p>
-
-</div>
-
-
-<div class="stat">
-
-<h3>{{ soon_count }}</h3>
-
-<p>⚠ Expiring Soon</p>
-
-</div>
-
-
-<div class="stat">
-
-<h3>{{ expired_count }}</h3>
-
-<p>✕ Expired</p>
-
-</div>
-
-</div>
-
-
-<!-- REMINDER -->
-
-{% set reminder_count = 0 %}
-
-{% for product in products %}
-
-{% if product.status == "Expiring Soon" %}
-
-{% set reminder_count = reminder_count + 1 %}
-
-{% endif %}
-
-{% endfor %}
-
-
+    <div class="add-box">
+        <h2>➕ Add a Product</h2>
+
+        {% if error %}
+        <div class="error">⚠ {{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <input type="text" name="name" placeholder="Product name"
+                   value="{{ prefill.name }}" maxlength="100" required>
+            <input type="date" name="expiry_date"
+                   value="{{ prefill.expiry_date }}" required>
+            <select name="category">
+                {% for c in categories %}
+                <option value="{{ c }}" {% if prefill.category == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="quantity" value="1" min="1" max="999"
+                   placeholder="Quantity" required>
+            <input type="hidden" name="barcode" value="{{ prefill.barcode }}">
+            <button type="submit">Add Product</button>
+        </form>
+
+        <p>
+            <a class="button scanner-btn" href="/scanner">📷 Open Barcode Scanner</a>
+            <a class="button" style="background:#1565c0" href="/dashboard">📊 Dashboard</a>
+        </p>
+    </div>
+
+    <div class="search-box">
+        <h2>🔎 Search &amp; Filter</h2>
+        <form method="GET">
+            <input type="text" name="search" placeholder="Search product..."
+                   value="{{ request.args.get('search', '') }}">
+            <select name="status">
+                <option value="">All Statuses</option>
+                <option value="Safe" {% if request.args.get('status') == 'Safe' %}selected{% endif %}>Safe</option>
+                <option value="Expiring Soon" {% if request.args.get('status') == 'Expiring Soon' %}selected{% endif %}>Expiring Soon</option>
+                <option value="Expired" {% if request.args.get('status') == 'Expired' %}selected{% endif %}>Expired</option>
+            </select>
+            <select name="category">
+                <option value="">All Categories</option>
+                {% for c in categories %}
+                <option value="{{ c }}" {% if request.args.get('category') == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Search</button>
+            <a class="button" href="/" style="background:#666">Clear</a>
+        </form>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><h3>{{ total }}</h3><p>Total Products</p></div>
+        <div class="stat"><h3>{{ safe_count }}</h3><p>✓ Safe</p></div>
+        <div class="stat"><h3>{{ soon_count }}</h3><p>⚠ Expiring Soon</p></div>
+        <div class="stat"><h3>{{ expired_count }}</h3><p>✕ Expired</p></div>
+    </div>
+
+    <!-- Expiry Reminder -->
 {% if reminder_count > 0 %}
-
 <div class="reminder">
-
-<h2>⚠️ Expiry Reminder</h2>
-
-<p>
-Some products are expiring within 5 days.
-Please use them soon!
-</p>
-
+    <h2>⚠️ Expiry Reminder</h2>
+    <p>
+        {{ reminder_count }} product(s) are expiring within
+        the next 5 days. Please check them and use them soon!
+    </p>
 </div>
-
 {% endif %}
 
+    <h2>🛒 My Products</h2>
 
-<!-- PRODUCTS -->
+    {% if products %}
+    <div class="products">
+        {% for product in products %}
+        <div class="card">
+            <h3>
+                {% if product.name|lower == "milk" %}🥛
+                {% elif product.name|lower == "bread" %}🍞
+                {% elif product.name|lower == "rice" %}🍚
+                {% else %}📦{% endif %}
+                {{ product.name }}
+            </h3>
 
-<h2>🛒 My Products</h2>
+            <p><strong>Category:</strong> {{ product.category }} |
+               <strong>Quantity:</strong> {{ product.quantity }}</p>
+            <p><strong>Expiry Date:</strong> {{ product.expiry_date }}</p>
+            <p><strong>Days Left:</strong>
+                {% if product.days_left < 0 %}Expired
+                {% elif product.days_left == 0 %}Expires today
+                {% else %}{{ product.days_left }} day(s){% endif %}
+            </p>
 
+            {% if product.status == "Safe" %}
+            <p class="safe">✓ Safe</p>
+            {% elif product.status == "Expiring Soon" %}
+            <p class="soon">⚠ Expiring Soon</p>
+            {% else %}
+            <p class="expired">✕ Expired</p>
+            {% endif %}
 
-{% if products %}
+            <div class="recommendation">
+                <strong>💡 Recommendation</strong>
+                <p>{{ product.recommendation }}</p>
+            </div>
 
-<div class="products">
-
-
-{% for product in products %}
-
-<div class="card">
-
-
-<h3>
-
-{% if product.name|lower == "milk" %}
-
-🥛
-
-{% elif product.name|lower == "bread" %}
-
-🍞
-
-{% elif product.name|lower == "rice" %}
-
-🍚
-
-{% else %}
-
-📦
-
-{% endif %}
-
-{{ product.name }}
-
-</h3>
-
-
-<p>
-
-<strong>Category:</strong> {{ product.category }}
-&nbsp;|&nbsp;
-<strong>Qty:</strong> {{ product.quantity }}
-
-</p>
-
-<p>
-
-<strong>Expiry Date:</strong>
-
-{{ product.expiry_date }}
-
-</p>
-
-
-<p>
-
-<strong>Days Left:</strong>
-
-{% if product.days_left < 0 %}
-
-Expired
-
-{% elif product.days_left == 0 %}
-
-Expires today
-
-{% else %}
-
-{{ product.days_left }} days
-
-{% endif %}
-
-</p>
-
-
-{% if product.status == "Safe" %}
-
-<p class="safe">
-
-✓ Safe
-
-</p>
-
-{% elif product.status == "Expiring Soon" %}
-
-<p class="soon">
-
-⚠ Expiring Soon
-
-</p>
-
-{% else %}
-
-<p class="expired">
-
-✕ Expired
-
-</p>
-
-{% endif %}
-
-
-<!-- RECOMMENDATION -->
-
-<div class="recommendation">
-
-<strong>💡 Recommendation</strong>
-
-<p>
-{{ product.recommendation }}
-</p>
-
+            <div class="actions">
+                <a class="button edit-btn" href="/edit/{{ product.id }}">✏ Edit</a>
+                <form method="POST" action="/delete/{{ product.id }}"
+                      onsubmit="return confirm('Are you sure you want to delete this product?');">
+                    <button type="submit" class="delete-btn">🗑 Delete</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">
+        <h3>No products found 📦</h3>
+        <p>Try adding a product or changing your search.</p>
+    </div>
+    {% endif %}
 </div>
-
-
-<!-- ACTIONS -->
-
-<div class="actions">
-
-<a
-    class="edit-btn"
-    href="/edit/{{ product.id }}"
->
-✏ Edit
-</a>
-
-
-<form method="POST" action="/delete/{{ product.id }}" style="margin:0;"
-      onsubmit="return confirm('Are you sure you want to delete this product?');">
-<button type="submit" class="delete-btn" style="border:none;cursor:pointer;font-size:inherit;">
-🗑 Delete
-</button>
-</form>
-
-</div>
-
-
-</div>
-
-{% endfor %}
-
-</div>
-
-
-{% else %}
-
-<div class="empty">
-
-<h3>No products found 📦</h3>
-
-<p>
-Try adding a product or changing your search.
-</p>
-
-</div>
-
-{% endif %}
-
-
-</div>
-
 </body>
-
 </html>

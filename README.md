@@ -27,7 +27,7 @@ before they go to waste.
 - **Input validation** and safe deletion (POST only)
 - **Automated tests:** pytest suite covering CRUD, validation, barcode lookup, OCR parsing, reminders, dashboard and recipes
 
-### Phase 3 additions
+### Additional Phase 2 features
 - **Dashboard** (`/dashboard`): status doughnut chart, category bar chart, and a "use these first" list (Chart.js)
 - **Recipe ideas** for items that need to be used soon, from the free TheMealDB API (`/api/recipes/<product>`)
 - **Continuous integration:** GitHub Actions runs the test suite on every push

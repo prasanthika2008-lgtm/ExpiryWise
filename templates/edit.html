@@ -1,200 +1,66 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>Edit Product - ExpiryWise</title>
-
-<style>
-
-body {
-
-    font-family: Arial, sans-serif;
-
-    background: #f4f7f6;
-
-    margin: 0;
-}
-
-header {
-
-    background: #2e7d32;
-
-    color: white;
-
-    text-align: center;
-
-    padding: 30px;
-}
-
-.container {
-
-    width: 90%;
-
-    max-width: 600px;
-
-    margin: 40px auto;
-}
-
-.box {
-
-    background: white;
-
-    padding: 30px;
-
-    border-radius: 15px;
-
-    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-}
-
-input {
-
-    width: 100%;
-
-    padding: 13px;
-
-    margin: 10px 0;
-
-    border: 1px solid #ccc;
-
-    border-radius: 8px;
-
-    font-size: 16px;
-}
-
-button {
-
-    width: 100%;
-
-    padding: 13px;
-
-    background: #2e7d32;
-
-    color: white;
-
-    border: none;
-
-    border-radius: 8px;
-
-    font-size: 16px;
-
-    cursor: pointer;
-}
-
-.back {
-
-    display: block;
-
-    text-align: center;
-
-    margin-top: 15px;
-
-    text-decoration: none;
-
-    color: #2e7d32;
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product - ExpiryWise</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f4f7f6; margin: 0; color: #222; }
+        header { background: #2e7d32; color: white; text-align: center; padding: 25px; }
+        .container { width: 90%; max-width: 600px; margin: 35px auto; }
+        .box { background: white; padding: 28px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,.1); }
+        label { display: block; margin-top: 14px; font-weight: bold; }
+        input, select { width: 100%; padding: 12px; margin-top: 7px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
+        button { width: 100%; padding: 13px; margin-top: 20px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        .back { display: block; text-align: center; margin-top: 16px; text-decoration: none; color: #2e7d32; }
+        .error { background: #fdecea; color: #b71c1c; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+    </style>
 </head>
-
-
 <body>
-
-
 <header>
-
-<h1>✏ Edit Product</h1>
-
-<p>Update your expiry information</p>
-
+    <h1>✏ Edit Product</h1>
+    <p>Update your product information</p>
 </header>
 
-
 <div class="container">
+    <div class="box">
+        <h2>Update Product</h2>
 
-<div class="box">
+        {% if error %}
+        <div class="error">⚠ {{ error }}</div>
+        {% endif %}
 
-<h2>Update Product</h2>
+        <form method="POST">
+            <label for="name">Product Name</label>
+            <input id="name" type="text" name="name"
+                   value="{{ product['name'] }}" maxlength="100" required>
 
+            <label for="expiry_date">Expiry Date</label>
+            <input id="expiry_date" type="date" name="expiry_date"
+                   value="{{ product['expiry_date'] }}" required>
 
-{% if error %}
-<div style="background:#fdecea;color:#b71c1c;padding:12px;border-radius:8px;margin-bottom:12px;">
-⚠ {{ error }}
+            <label for="category">Category</label>
+            <select id="category" name="category">
+                {% for c in categories %}
+                <option value="{{ c }}" {% if product['category'] == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="quantity">Quantity</label>
+            <input id="quantity" type="number" name="quantity"
+                   value="{{ product['quantity'] or 1 }}" min="1" max="999" required>
+
+            <label for="barcode">Barcode (optional)</label>
+            <input id="barcode" type="text" name="barcode"
+                   value="{{ product['barcode'] or '' }}" inputmode="numeric"
+                   placeholder="Enter 6 to 14 digits">
+
+            <button type="submit">💾 Save Changes</button>
+        </form>
+
+        <a class="back" href="/">← Back to Home</a>
+    </div>
 </div>
-{% endif %}
-
-<form method="POST">
-
-
-<label>
-
-Product Name
-
-</label>
-
-
-<input
-
-type="text"
-
-name="name"
-
-value="{{ product['name'] }}"
-
-required
-
->
-
-
-<label>
-
-Expiry Date
-
-</label>
-
-
-<input
-
-type="date"
-
-name="expiry_date"
-
-value="{{ product['expiry_date'] }}"
-
-required
-
->
-
-
-<button type="submit">
-
-💾 Save Changes
-
-</button>
-
-
-</form>
-
-
-<a class="back" href="/">
-
-← Back to Dashboard
-
-</a>
-
-
-</div>
-
-</div>
-
-
 </body>
-
 </html>

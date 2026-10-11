@@ -15,8 +15,8 @@ DATABASE = os.environ.get("EXPIRYWISE_DB", "database.db")
 CATEGORIES = ["Dairy", "Meat", "Fruits", "Vegetables", "Bakery", "Packaged", "Medicine", "Other"]
 SOON_DAYS = 5
 
-# ---------------- DATABASE ----------------
 
+# ---------------- DATABASE ----------------
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -49,7 +49,6 @@ def create_table():
 
 
 # ---------------- VALIDATION ----------------
-
 
 def validate_product(form):
     """Return (clean_values, error). error is None when the input is valid."""
@@ -90,7 +89,6 @@ def validate_product(form):
 
 # ---------------- PRODUCT PROCESSING ----------------
 
-
 def get_products():
     conn = get_db()
     rows = conn.execute("SELECT * FROM products ORDER BY expiry_date").fetchall()
@@ -104,10 +102,8 @@ def get_products():
             expiry = date.fromisoformat(row["expiry_date"])
         except ValueError:
             continue  # skip rows with a corrupted date instead of crashing
-
         days_left = (expiry - today).days
         category = row["category"] or "Other"
-
         products.append({
             "id": row["id"],
             "name": row["name"],
@@ -123,7 +119,6 @@ def get_products():
 
 
 # ---------------- HOME ----------------
-
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -149,7 +144,6 @@ def index():
     search = request.args.get("search", "").strip().lower()
     filter_status = request.args.get("status", "")
     filter_category = request.args.get("category", "")
-
     if search:
         products = [p for p in products if search in p["name"].lower()]
     if filter_status:
@@ -164,7 +158,6 @@ def index():
         "category": request.form.get("category") or request.args.get("category", ""),
         "barcode": request.form.get("barcode") or request.args.get("barcode", ""),
     }
-
     return render_template(
         "index.html",
         products=products,
@@ -172,6 +165,7 @@ def index():
         safe_count=sum(p["status"] == "Safe" for p in products),
         soon_count=sum(p["status"] == "Expiring Soon" for p in products),
         expired_count=sum(p["status"] == "Expired" for p in products),
+        reminder_count=sum(p["status"] == "Expiring Soon" for p in all_products),
         categories=CATEGORIES,
         prefill=prefill,
         error=error,
@@ -179,7 +173,6 @@ def index():
 
 
 # ---------------- DELETE (POST only) ----------------
-
 
 @app.route("/delete/<int:id>", methods=["POST"])
 def delete(id):
@@ -192,7 +185,6 @@ def delete(id):
 
 # ---------------- EDIT ----------------
 
-
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
 def edit(id):
     conn = get_db()
@@ -201,7 +193,6 @@ def edit(id):
     if product is None:
         conn.close()
         return redirect("/")
-
     if request.method == "POST":
         values, error = validate_product(request.form)
         if error:
@@ -214,13 +205,11 @@ def edit(id):
         conn.commit()
         conn.close()
         return redirect("/")
-
     conn.close()
     return render_template("edit.html", product=product, error=None)
 
 
 # ---------------- SCANNER + BARCODE LOOKUP + OCR ----------------
-
 
 @app.route("/scanner")
 def scanner():
@@ -258,7 +247,6 @@ def barcode_lookup(code):
         data = response.json()
     except (requests.RequestException, ValueError):
         return jsonify({"found": False, "error": "Lookup service unavailable"}), 502
-
     if data.get("status") != 1:
         return jsonify({"found": False})
 
@@ -291,9 +279,7 @@ def ocr_expiry():
     return jsonify({"expiry_date": expiry, "raw_text": text.strip()[:500]})
 
 
-
 # ---------------- DASHBOARD + RECIPE IDEAS ----------------
-
 
 @app.route("/dashboard")
 def dashboard():
@@ -305,7 +291,10 @@ def dashboard():
         by_category[p["category"]] = by_category.get(p["category"], 0) + 1
 
     # Items to use first: not yet expired, soonest first
-    use_first = sorted((p for p in products if p["days_left"] >= 0), key=lambda p: p["days_left"])[:5]
+    use_first = sorted(
+        (p for p in products if p["days_left"] >= 0),
+        key=lambda p: p["days_left"]
+    )[:5]
 
     return render_template(
         "dashboard.html",
@@ -324,7 +313,6 @@ def recipes(product_name):
 
 # ---------------- STATS ----------------
 
-
 @app.route("/api/stats")
 def stats():
     products = get_products()
@@ -333,11 +321,14 @@ def stats():
     for p in products:
         by_status[p["status"]] += 1
         by_category[p["category"]] = by_category.get(p["category"], 0) + 1
-    return jsonify({"total": len(products), "by_status": by_status, "by_category": by_category})
+    return jsonify({
+        "total": len(products),
+        "by_status": by_status,
+        "by_category": by_category,
+    })
 
 
 # ---------------- START APP ----------------
-
 
 def start_reminder_scheduler():
     """Send a daily summary email at 08:00 if SMTP credentials are configured."""
