@@ -173,3 +173,60 @@ def test_send_skips_without_smtp(monkeypatch):
     monkeypatch.delenv("SMTP_PASS", raising=False)
     soon = [{"name": "Milk", "days_left": 1, "expiry_date": "x", "status": "Expiring Soon"}]
     assert reminders.send_reminders(soon) is False
+
+
+# ---------- dashboard + recipes (Phase 3) ----------
+import recipes
+
+
+def test_dashboard_empty_state(client):
+    r = client.get("/dashboard")
+    assert r.status_code == 200 and b"No products yet" in r.data
+
+
+def test_dashboard_shows_counts_and_use_first(client):
+    add(client, "Milk", 2, category="Dairy")
+    add(client, "Old Bread", -3, category="Bakery")
+    add(client, "Rice", 90, category="Packaged")
+    r = client.get("/dashboard")
+    assert r.status_code == 200
+    assert b"statusChart" in r.data and b"Use these first" in r.data
+    assert b"Milk" in r.data                       # soonest non-expired item is listed
+    use_first_block = r.data.split(b"Use these first")[1]
+    assert b"Old Bread" not in use_first_block      # expired items are not "use first"
+
+
+def test_main_ingredient_mapping():
+    assert recipes.main_ingredient("Amul Curd 400g") == "yogurt"
+    assert recipes.main_ingredient("Chicken curry") == "chicken"
+    assert recipes.main_ingredient("Unknown thing") is None
+
+
+def test_recipe_ideas_found_and_cached():
+    recipes._fetch.cache_clear()
+    payload = {"meals": [{"strMeal": "Chicken Handi", "idMeal": "52846"},
+                         {"strMeal": "Chicken Alfredo", "idMeal": "52847"}]}
+    with patch("recipes.requests.get", return_value=FakeResponse(payload)) as mocked:
+        first = recipes.get_recipe_ideas("Chicken", limit=1)
+        recipes.get_recipe_ideas("Chicken")
+    assert first == [{"name": "Chicken Handi", "url": "https://www.themealdb.com/meal/52846"}]
+    assert mocked.call_count == 1                   # second call served from cache
+
+
+def test_recipe_ideas_handle_no_meals_and_errors():
+    import requests
+    recipes._fetch.cache_clear()
+    with patch("recipes.requests.get", return_value=FakeResponse({"meals": None})):
+        assert recipes.get_recipe_ideas("Milk") == []
+    recipes._fetch.cache_clear()
+    with patch("recipes.requests.get", side_effect=requests.ConnectionError):
+        assert recipes.get_recipe_ideas("Rice") == []
+    assert recipes.get_recipe_ideas("Mystery item") == []
+
+
+def test_recipes_api_endpoint(client):
+    recipes._fetch.cache_clear()
+    payload = {"meals": [{"strMeal": "Banana Pancakes", "idMeal": "52855"}]}
+    with patch("recipes.requests.get", return_value=FakeResponse(payload)):
+        data = client.get("/api/recipes/Banana").get_json()
+    assert data["recipes"][0]["name"] == "Banana Pancakes"
