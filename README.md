@@ -1,5 +1,7 @@
 # ExpiryWise
 
+![Tests](https://github.com/prasanthika2008-lgtm/ExpiryWise/actions/workflows/tests.yml/badge.svg)
+
 **Smart food expiry tracking and food waste reduction system**
 
 ExpiryWise is a Flask web app that tracks food and medicine expiry dates, warns you before items spoil,
@@ -23,7 +25,12 @@ before they go to waste.
 - **Smarter recommendations:** category-aware tips and use-it-up ideas based on the product name
 - **Category filter** and **statistics API** (`/api/stats`)
 - **Input validation** and safe deletion (POST only)
-- **Automated tests:** pytest suite covering CRUD, validation, barcode lookup, OCR parsing and reminders
+- **Automated tests:** pytest suite covering CRUD, validation, barcode lookup, OCR parsing, reminders, dashboard and recipes
+
+### Phase 3 additions
+- **Dashboard** (`/dashboard`): status doughnut chart, category bar chart, and a "use these first" list (Chart.js)
+- **Recipe ideas** for items that need to be used soon, from the free TheMealDB API (`/api/recipes/<product>`)
+- **Continuous integration:** GitHub Actions runs the test suite on every push
 
 ## Architecture
 
@@ -34,6 +41,7 @@ Flask app (app.py)
    |-- recommendation.py   status + recommendations
    |-- ocr.py              Tesseract OCR + date parsing
    |-- reminders.py        email summaries
+   |-- recipes.py          recipe ideas (TheMealDB API)
    |-- Open Food Facts     barcode -> product lookup (external API)
         |
 SQLite (database.db)
@@ -81,7 +89,7 @@ python -m pytest -q
 
 ## Roadmap (next phases)
 
-- Dashboard charts and waste statistics
+- Waste trend analytics over time
 - User accounts
 - LLM-powered recipe suggestions
 - Push notifications / mobile app
