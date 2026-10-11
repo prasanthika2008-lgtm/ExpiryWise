@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExpiryWise Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; background: #f4f7f6; color: #222; }
+header { background: #2e7d32; color: white; padding: 24px; text-align: center; }
+header h1 { margin: 0; }
+.container { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat { background: white; border-radius: 10px; padding: 16px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+.stat b { display: block; font-size: 28px; }
+.safe b { color: #2e7d32; } .soon b { color: #ef6c00; } .exp b { color: #c62828; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.card { background: white; border-radius: 10px; padding: 18px; box-shadow: 0 2px 6px rgba(0,0,0,.08); margin-bottom: 16px; }
+.card h2 { margin-top: 0; font-size: 18px; }
+canvas { max-height: 280px; }
+.item { padding: 10px 0; border-bottom: 1px solid #eee; }
+.item:last-child { border-bottom: none; }
+.days { font-weight: bold; color: #ef6c00; }
+.recipes { font-size: 14px; margin-top: 6px; color: #555; }
+.recipes a { color: #1565c0; text-decoration: none; margin-right: 10px; display: inline-block; }
+.empty { color: #777; padding: 12px 0; }
+.back { display: inline-block; margin-bottom: 14px; color: #1565c0; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+<h1>📊 Dashboard</h1>
+<p>Your food at a glance</p>
+</header>
+
+<div class="container">
+
+<a class="back" href="/">← Back to products</a>
+
+{% if total == 0 %}
+<div class="card empty">No products yet. Add your first product to see charts here.</div>
+{% else %}
+
+<div class="stats">
+  <div class="stat"><b>{{ total }}</b>Total items</div>
+  <div class="stat safe"><b>{{ by_status['Safe'] }}</b>Safe</div>
+  <div class="stat soon"><b>{{ by_status['Expiring Soon'] }}</b>Expiring soon</div>
+  <div class="stat exp"><b>{{ by_status['Expired'] }}</b>Expired</div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>Items by status</h2>
+    <canvas id="statusChart"></canvas>
+  </div>
+  <div class="card">
+    <h2>Items by category</h2>
+    <canvas id="categoryChart"></canvas>
+  </div>
+</div>
+
+<div class="card">
+  <h2>🍽 Use these first</h2>
+  {% for p in use_first %}
+  <div class="item" data-name="{{ p.name }}">
+    <strong>{{ p.name }}</strong> ({{ p.category }}) &mdash;
+    <span class="days">{{ p.days_left }} day(s) left</span>
+    <div class="recipes" data-recipes>Looking for recipe ideas...</div>
+  </div>
+  {% else %}
+  <div class="empty">Nothing is waiting to be used.</div>
+  {% endfor %}
+</div>
+
+{% endif %}
+</div>
+
+<script>
+const statusData = {{ by_status | tojson }};
+const categoryData = {{ by_category | tojson }};
+
+if (document.getElementById("statusChart") && typeof Chart !== "undefined") {
+  new Chart(document.getElementById("statusChart"), {
+    type: "doughnut",
+    data: {
+      labels: Object.keys(statusData),
+      datasets: [{ data: Object.values(statusData), backgroundColor: ["#2e7d32", "#ef6c00", "#c62828"] }]
+    }
+  });
+  new Chart(document.getElementById("categoryChart"), {
+    type: "bar",
+    data: {
+      labels: Object.keys(categoryData),
+      datasets: [{ label: "Items", data: Object.values(categoryData), backgroundColor: "#1565c0" }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+}
+
+// Recipe ideas for the items that need to be used first
+document.querySelectorAll(".item").forEach(async (item) => {
+  const box = item.querySelector("[data-recipes]");
+  try {
+    const res = await fetch("/api/recipes/" + encodeURIComponent(item.dataset.name));
+    const data = await res.json();
+    if (data.recipes.length) {
+      box.innerHTML = "Try: " + data.recipes
+        .map(r => `<a href="${r.url}" target="_blank" rel="noopener">${r.name}</a>`).join("");
+    } else {
+      box.textContent = "No recipe ideas found for this item.";
+    }
+  } catch (e) {
+    box.textContent = "Recipe ideas unavailable right now.";
+  }
+});
+</script>
+
+</body>
+</html>

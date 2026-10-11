@@ -5,6 +5,7 @@ from datetime import date
 import requests
 from flask import Flask, jsonify, redirect, render_template, request
 
+from recipes import get_recipe_ideas
 from recommendation import get_recommendation, get_status
 
 app = Flask(__name__)
@@ -288,6 +289,37 @@ def ocr_expiry():
     except Exception:
         return jsonify({"error": "Could not read that image"}), 400
     return jsonify({"expiry_date": expiry, "raw_text": text.strip()[:500]})
+
+
+
+# ---------------- DASHBOARD + RECIPE IDEAS ----------------
+
+
+@app.route("/dashboard")
+def dashboard():
+    products = get_products()
+    by_status = {"Safe": 0, "Expiring Soon": 0, "Expired": 0}
+    by_category = {}
+    for p in products:
+        by_status[p["status"]] += 1
+        by_category[p["category"]] = by_category.get(p["category"], 0) + 1
+
+    # Items to use first: not yet expired, soonest first
+    use_first = sorted((p for p in products if p["days_left"] >= 0), key=lambda p: p["days_left"])[:5]
+
+    return render_template(
+        "dashboard.html",
+        total=len(products),
+        by_status=by_status,
+        by_category=by_category,
+        use_first=use_first,
+        waste_risk=by_status["Expiring Soon"] + by_status["Expired"],
+    )
+
+
+@app.route("/api/recipes/<path:product_name>")
+def recipes(product_name):
+    return jsonify({"product": product_name, "recipes": get_recipe_ideas(product_name)})
 
 
 # ---------------- STATS ----------------
