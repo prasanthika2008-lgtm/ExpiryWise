@@ -14,22 +14,23 @@
         }
         header {
             background: #2e7d32;
-            color: white;
-            padding: 30px;
+            color: #fff;
+            padding: 28px 18px;
             text-align: center;
         }
         header h1 { margin: 0; font-size: 38px; }
-        header p { margin-top: 8px; font-size: 18px; }
-        .container { width: 90%; max-width: 1100px; margin: 30px auto; }
-        .add-box, .search-box, .stat, .card, .empty {
-            background: white;
-            padding: 22px;
-            border-radius: 15px;
-            box-shadow: 0 3px 10px rgba(0,0,0,.08);
+        header p { margin: 8px 0 0; font-size: 18px; }
+        .container { width: 90%; max-width: 1100px; margin: 28px auto; }
+        .box, .stat, .card, .empty {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, .08);
         }
-        .add-box, .search-box { margin-bottom: 25px; }
+        .box { padding: 22px; margin-bottom: 24px; }
+        h2 { margin-top: 0; }
         form { display: flex; gap: 12px; flex-wrap: wrap; }
         input, select {
+            min-width: 0;
             padding: 12px;
             border: 1px solid #ccc;
             border-radius: 8px;
@@ -41,7 +42,7 @@
             border: none;
             border-radius: 8px;
             background: #2e7d32;
-            color: white;
+            color: #fff;
             cursor: pointer;
             text-decoration: none;
             font-size: 15px;
@@ -54,13 +55,17 @@
             border-radius: 8px;
             margin-bottom: 12px;
         }
+        .button-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+        .scanner-btn { background: #6a1b9a; }
+        .dashboard-btn { background: #1565c0; }
+        .clear-btn { background: #666; }
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 15px;
             margin-bottom: 25px;
         }
-        .stat { text-align: center; }
+        .stat { text-align: center; padding: 20px; }
         .stat h3 { margin: 0; font-size: 28px; }
         .reminder {
             background: #fff3cd;
@@ -75,7 +80,8 @@
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 20px;
         }
-        .card h3 { margin-top: 0; font-size: 22px; }
+        .card { padding: 20px; min-width: 0; }
+        .card h3 { margin-top: 0; font-size: 22px; overflow-wrap: anywhere; }
         .safe { color: #2e7d32; font-weight: bold; }
         .soon { color: #f57c00; font-weight: bold; }
         .expired { color: #d32f2f; font-weight: bold; }
@@ -85,15 +91,17 @@
             border-radius: 8px;
             margin-top: 12px;
         }
-        .actions { margin-top: 15px; display: flex; gap: 10px; align-items: center; }
+        .actions { margin-top: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .edit-btn { background: #1976d2; }
         .delete-btn { background: #d32f2f; }
-        .scanner-btn { background: #6a1b9a; margin-right: 8px; }
-        .empty { text-align: center; }
+        .delete-form { display: inline; margin: 0; }
+        .delete-form button { padding: 9px 14px; }
+        .empty { padding: 30px; text-align: center; }
         @media (max-width: 600px) {
             .container { width: 94%; }
-            form { flex-direction: column; }
-            input, select, form button { width: 100%; }
+            form:not(.delete-form) { flex-direction: column; }
+            input, select, form:not(.delete-form) button { width: 100%; }
+            header h1 { font-size: 32px; }
         }
     </style>
 </head>
@@ -104,19 +112,17 @@
 </header>
 
 <div class="container">
-    <div class="add-box">
+    <section class="box">
         <h2>➕ Add a Product</h2>
-
         {% if error %}
         <div class="error">⚠ {{ error }}</div>
         {% endif %}
 
-        <form method="POST">
+        <form method="POST" action="/">
             <input type="text" name="name" placeholder="Product name"
                    value="{{ prefill.name }}" maxlength="100" required>
-            <input type="date" name="expiry_date"
-                   value="{{ prefill.expiry_date }}" required>
-            <select name="category">
+            <input type="date" name="expiry_date" value="{{ prefill.expiry_date }}" required>
+            <select name="category" aria-label="Category">
                 {% for c in categories %}
                 <option value="{{ c }}" {% if prefill.category == c %}selected{% endif %}>{{ c }}</option>
                 {% endfor %}
@@ -126,34 +132,33 @@
             <input type="hidden" name="barcode" value="{{ prefill.barcode }}">
             <button type="submit">Add Product</button>
         </form>
-
-        <p>
+        <div class="button-row">
             <a class="button scanner-btn" href="/scanner">📷 Open Barcode Scanner</a>
-            <a class="button" style="background:#1565c0" href="/dashboard">📊 Dashboard</a>
-        </p>
-    </div>
+            <a class="button dashboard-btn" href="/dashboard">📊 Dashboard</a>
+        </div>
+    </section>
 
-    <div class="search-box">
+    <section class="box">
         <h2>🔎 Search &amp; Filter</h2>
-        <form method="GET">
+        <form method="GET" action="/">
             <input type="text" name="search" placeholder="Search product..."
                    value="{{ request.args.get('search', '') }}">
-            <select name="status">
+            <select name="status" aria-label="Filter by status">
                 <option value="">All Statuses</option>
                 <option value="Safe" {% if request.args.get('status') == 'Safe' %}selected{% endif %}>Safe</option>
                 <option value="Expiring Soon" {% if request.args.get('status') == 'Expiring Soon' %}selected{% endif %}>Expiring Soon</option>
                 <option value="Expired" {% if request.args.get('status') == 'Expired' %}selected{% endif %}>Expired</option>
             </select>
-            <select name="category">
+            <select name="category" aria-label="Filter by category">
                 <option value="">All Categories</option>
                 {% for c in categories %}
                 <option value="{{ c }}" {% if request.args.get('category') == c %}selected{% endif %}>{{ c }}</option>
                 {% endfor %}
             </select>
             <button type="submit">Search</button>
-            <a class="button" href="/" style="background:#666">Clear</a>
+            <a class="button clear-btn" href="/">Clear</a>
         </form>
-    </div>
+    </section>
 
     <div class="stats">
         <div class="stat"><h3>{{ total }}</h3><p>Total Products</p></div>
@@ -162,61 +167,58 @@
         <div class="stat"><h3>{{ expired_count }}</h3><p>✕ Expired</p></div>
     </div>
 
-    <!-- Expiry Reminder -->
-{% if reminder_count > 0 %}
-<div class="reminder">
-    <h2>⚠️ Expiry Reminder</h2>
-    <p>
-        {{ reminder_count }} product(s) are expiring within
-        the next 5 days. Please check them and use them soon!
-    </p>
-</div>
-{% endif %}
+    {# Prefer the unfiltered count passed by app.py; fall back safely if it is absent. #}
+    {% if reminder_count is defined %}
+        {% set display_reminder_count = reminder_count %}
+    {% else %}
+        {% set display_reminder_count = products | selectattr('status', 'equalto', 'Expiring Soon') | list | length %}
+    {% endif %}
+    {% if display_reminder_count > 0 %}
+    <div class="reminder">
+        <h2>⚠️ Expiry Reminder</h2>
+        <p>{{ display_reminder_count }} product(s) are expiring within 5 days. Please use them soon!</p>
+    </div>
+    {% endif %}
 
     <h2>🛒 My Products</h2>
-
     {% if products %}
     <div class="products">
         {% for product in products %}
-        <div class="card">
+        <article class="card">
             <h3>
-                {% if product.name|lower == "milk" %}🥛
-                {% elif product.name|lower == "bread" %}🍞
-                {% elif product.name|lower == "rice" %}🍚
+                {% if product.name|lower == 'milk' %}🥛
+                {% elif product.name|lower == 'bread' %}🍞
+                {% elif product.name|lower == 'rice' %}🍚
                 {% else %}📦{% endif %}
                 {{ product.name }}
             </h3>
-
-            <p><strong>Category:</strong> {{ product.category }} |
-               <strong>Quantity:</strong> {{ product.quantity }}</p>
+            <p><strong>Category:</strong> {{ product.category }} &nbsp;|&nbsp;
+               <strong>Qty:</strong> {{ product.quantity }}</p>
             <p><strong>Expiry Date:</strong> {{ product.expiry_date }}</p>
             <p><strong>Days Left:</strong>
                 {% if product.days_left < 0 %}Expired
                 {% elif product.days_left == 0 %}Expires today
-                {% else %}{{ product.days_left }} day(s){% endif %}
+                {% else %}{{ product.days_left }} days{% endif %}
             </p>
-
-            {% if product.status == "Safe" %}
-            <p class="safe">✓ Safe</p>
-            {% elif product.status == "Expiring Soon" %}
-            <p class="soon">⚠ Expiring Soon</p>
+            {% if product.status == 'Safe' %}
+                <p class="safe">✓ Safe</p>
+            {% elif product.status == 'Expiring Soon' %}
+                <p class="soon">⚠ Expiring Soon</p>
             {% else %}
-            <p class="expired">✕ Expired</p>
+                <p class="expired">✕ Expired</p>
             {% endif %}
-
             <div class="recommendation">
                 <strong>💡 Recommendation</strong>
                 <p>{{ product.recommendation }}</p>
             </div>
-
             <div class="actions">
                 <a class="button edit-btn" href="/edit/{{ product.id }}">✏ Edit</a>
-                <form method="POST" action="/delete/{{ product.id }}"
+                <form class="delete-form" method="POST" action="/delete/{{ product.id }}"
                       onsubmit="return confirm('Are you sure you want to delete this product?');">
-                    <button type="submit" class="delete-btn">🗑 Delete</button>
+                    <button class="delete-btn" type="submit">🗑 Delete</button>
                 </form>
             </div>
-        </div>
+        </article>
         {% endfor %}
     </div>
     {% else %}
