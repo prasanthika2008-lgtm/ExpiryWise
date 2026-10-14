@@ -1,100 +1,72 @@
-# ExpiryWise
-
-![Tests](https://github.com/prasanthika2008-lgtm/ExpiryWise/actions/workflows/tests.yml/badge.svg)
-
-**Smart food expiry tracking and food waste reduction system**
-
-ExpiryWise is a Flask web app that tracks food and medicine expiry dates, warns you before items spoil,
-fills in product details from a barcode, reads expiry dates from photos, and suggests how to use items
-before they go to waste.
-
-## Features
-
-### Phase 1 (35%)
-- Add, view, edit and delete products (CRUD)
-- Remaining-days calculation and status: Safe / Expiring Soon / Expired
-- Search and filter by status
-- 5-day expiry window and rule-based recommendations
-
-### Phase 2 (70%)
-- **Extended data model:** category, quantity, barcode and added date (existing databases migrate automatically)
-- **Barcode scanning with automatic product lookup** via the Open Food Facts API (name and category auto-filled)
-- **OCR expiry-date extraction:** upload a photo of the package and the date is detected with Tesseract
-  (handles formats like `15/03/2027`, `12 JAN 2027`, `03/2027`; picks the latest date when manufacture and expiry both appear)
-- **Email reminders:** a daily 08:00 summary of items expiring soon or expired (APScheduler + SMTP)
-- **Smarter recommendations:** category-aware tips and use-it-up ideas based on the product name
-- **Category filter** and **statistics API** (`/api/stats`)
-- **Input validation** and safe deletion (POST only)
-- **Automated tests:** pytest suite covering CRUD, validation, barcode lookup, OCR parsing, reminders, dashboard and recipes
-
-### Additional Phase 2 features
-- **Dashboard** (`/dashboard`): status doughnut chart, category bar chart, and a "use these first" list (Chart.js)
-- **Recipe ideas** for items that need to be used soon, from the free TheMealDB API (`/api/recipes/<product>`)
-- **Continuous integration:** GitHub Actions runs the test suite on every push
-
-## Architecture
-
+ExpiryWise
+ExpiryWise is a Python web application that helps users avoid food and
+product wastage. It records items with their expiry dates, reads label
+text from product images using OCR, reminds the user before items
+expire, and suggests recipes that use items close to expiry.
+Project status: Phase 2 complete (about 70% of the project).
+Features
+Store product details and expiry dates in a database
+Scan product images and extract text with OCR (`ocr.py`)
+Reminders for items that are expired or close to expiry (`reminders.py`)
+Recommendations on which items to use first (`recommendation.py`)
+Recipe suggestions based on items nearing expiry (`recipes.py`)
+Barcode validation: an invalid barcode is discarded (set to `None`)
+Web pages for the home view and the scanner (`templates/`)
+Automated tests with pytest and GitHub Actions
+Project structure
 ```
-Browser (HTML/CSS/JS, html5-qrcode)
-        |
-Flask app (app.py)
-   |-- recommendation.py   status + recommendations
-   |-- ocr.py              Tesseract OCR + date parsing
-   |-- reminders.py        email summaries
-   |-- recipes.py          recipe ideas (TheMealDB API)
-   |-- Open Food Facts     barcode -> product lookup (external API)
-        |
-SQLite (database.db)
+Expirywise/
+|-- app.py                 Main application and routes
+|-- ocr.py                 OCR text extraction
+|-- reminders.py           Expiry reminder logic
+|-- recommendation.py      Use-first recommendations
+|-- recipes.py             Recipe suggestions
+|-- templates/             HTML pages (index.html, scanner.html)
+|-- tests/
+|   `-- test_expirywise.py Automated tests
+|-- .github/workflows/
+|   `-- tests.yml          CI pipeline
+|-- requirements.txt       Python dependencies
+|-- .gitignore
+`-- README.md
 ```
-
-## Setup
-
-```bash
-git clone https://github.com/prasanthika2008-lgtm/ExpiryWise.git
-cd ExpiryWise
-python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+Installation
+Clone the repository:
 ```
-
-OCR also needs the Tesseract program installed:
-- Windows: install from https://github.com/UB-Mannheim/tesseract/wiki and add it to PATH
-- Ubuntu/Debian: `sudo apt install tesseract-ocr`
-- macOS: `brew install tesseract`
-
-Run the app:
-
-```bash
+   git clone https://github.com/prasanthika2008-lgtm/ExpiryWise.git
+   cd ExpiryWise
+   ```
+Create and activate a virtual environment (Windows PowerShell):
+```
+   python -m venv .venv
+   .venv\Scripts\Activate.ps1
+   ```
+Install the dependencies:
+```
+   pip install -r requirements.txt
+   ```
+Run the application
+```
 python app.py
 ```
-
-Open http://127.0.0.1:5000. (The camera scanner needs `localhost` or HTTPS.)
-
-### Optional: email reminders
-
-Set these environment variables before starting the app (use a Gmail *app password*, never your real password):
-
+Then open the address shown in the terminal in your browser.
+Run the tests
 ```
-SMTP_USER=you@gmail.com
-SMTP_PASS=your-app-password
-REMINDER_TO=you@gmail.com      # optional, defaults to SMTP_USER
+pytest -v
 ```
-
-Test it once with `python reminders.py`.
-
-## Tests
-
-```bash
-python -m pytest -q
+Latest verified result before the final Phase 2 fixes:
+27 passed, 1 skipped, 0 failed.
+Screenshots
+Add your screenshots here, for example:
 ```
-
-## Roadmap (next phases)
-
-- Waste trend analytics over time
-- User accounts
-- LLM-powered recipe suggestions
-- Push notifications / mobile app
-- Cloud deployment and sync
-
-## Author
-
-Prasanthika M, BE CSE, 2nd Year
+![Home page](screenshots/home.png)
+![Scanner page](screenshots/scanner.png)
+```
+Remaining work (Phase 3)
+Improve OCR accuracy for different date formats
+Improve the user interface and expiry colour indicators
+Add reminder delivery (email or notifications)
+Add more tests
+Final deployment
+Author
+Prasanthika M, B.E. Computer Science and Engineering (II Year)
