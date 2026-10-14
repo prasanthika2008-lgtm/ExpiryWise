@@ -14,6 +14,7 @@ app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024  # 8 MB upload limit
 DATABASE = os.environ.get("EXPIRYWISE_DB", "database.db")
 CATEGORIES = ["Dairy", "Meat", "Fruits", "Vegetables", "Bakery", "Packaged", "Medicine", "Other"]
 SOON_DAYS = 5
+BARCODE_IGNORED_MESSAGE = "Product saved, but the barcode was invalid and was ignored."
 
 
 # ---------------- DATABASE ----------------
@@ -51,11 +52,16 @@ def create_table():
 # ---------------- VALIDATION ----------------
 
 def validate_product(form):
-    """Return (clean_values, error). error is None when the input is valid."""
+    """Return (clean_values, error). error is None when the input is valid.
+
+    clean_values["barcode_ignored"] is True when a barcode was typed in but
+    was invalid, so the caller can tell the user it was dropped.
+    """
     name = (form.get("name") or "").strip()
     expiry_raw = (form.get("expiry_date") or "").strip()
     category = form.get("category") or "Other"
     barcode = (form.get("barcode") or "").strip() or None
+    barcode_ignored = False
 
     if not name:
         return None, "Product name is required."
@@ -77,6 +83,7 @@ def validate_product(form):
         return None, "Quantity must be between 1 and 999."
     if barcode and (not barcode.isdigit() or len(barcode) > 14):
         barcode = None
+        barcode_ignored = True
 
     return {
         "name": name,
@@ -84,6 +91,7 @@ def validate_product(form):
         "category": category,
         "quantity": quantity,
         "barcode": barcode,
+        "barcode_ignored": barcode_ignored,
     }, None
 
 
@@ -123,6 +131,7 @@ def get_products():
 @app.route("/", methods=["GET", "POST"])
 def index():
     error = None
+    saved_with_warning = False
     if request.method == "POST":
         values, error = validate_product(request.form)
         if values:
@@ -136,7 +145,11 @@ def index():
             )
             conn.commit()
             conn.close()
-            return redirect("/")
+            if not values["barcode_ignored"]:
+                return redirect("/")
+            # Product was saved, but tell the user the barcode was dropped.
+            saved_with_warning = True
+            error = BARCODE_IGNORED_MESSAGE
 
     all_products = get_products()
     products = all_products
@@ -152,12 +165,15 @@ def index():
         products = [p for p in products if p["category"] == filter_category]
 
     # Values used to prefill the add form (e.g. from the scanner)
-    prefill = {
-        "name": request.form.get("name") or request.args.get("name", ""),
-        "expiry_date": request.form.get("expiry_date") or request.args.get("expiry_date", ""),
-        "category": request.form.get("category") or request.args.get("category", ""),
-        "barcode": request.form.get("barcode") or request.args.get("barcode", ""),
-    }
+    if saved_with_warning:
+        prefill = {"name": "", "expiry_date": "", "category": "", "barcode": ""}
+    else:
+        prefill = {
+            "name": request.form.get("name") or request.args.get("name", ""),
+            "expiry_date": request.form.get("expiry_date") or request.args.get("expiry_date", ""),
+            "category": request.form.get("category") or request.args.get("category", ""),
+            "barcode": request.form.get("barcode") or request.args.get("barcode", ""),
+        }
     return render_template(
         "index.html",
         products=products,
