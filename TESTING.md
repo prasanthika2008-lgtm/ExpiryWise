@@ -116,7 +116,87 @@ Run `pytest -v`. Full details are in [docs/TESTING.md](docs/TESTING.md).
 
 ## Screenshots
 (Add 3 or 4 screenshots here: home page, scanner, dashboard.)
+# Testing Guide
 
+## 1. Overview
+ExpiryWise uses **pytest** for unit testing. Tests are in the `tests/`
+folder and run automatically on every push through GitHub Actions
+(`.github/workflows/tests.yml`).
+
+## 2. Tools Used
+| Tool | Purpose |
+|------|---------|
+| pytest | Runs the tests |
+| pytest-cov | Measures test coverage |
+| Flask test client | Sends requests to the app without starting a server |
+| GitHub Actions | Runs the tests automatically on every push |
+
+## 3. How to Run the Tests
+```
+pip install -r requirements.txt
+pytest -v
+pytest --cov=. --cov-report=term-missing
+```
+
+## 4. Test Strategy
+| Area | Approach |
+|------|----------|
+| Input validation | Valid, invalid and empty values for name, date, quantity, barcode |
+| Expiry status | Fixed day counts checked against Safe / Expiring Soon / Expired |
+| OCR date parsing | Sample text such as "15/03/2027" and "JAN 2027"; no real image needed |
+| Recommendations and recipes | Known inputs checked against expected output |
+| Routes | Flask test client checks status codes and returned data |
+| Error handling | Each error type is triggered on purpose and the JSON message is checked |
+
+## 5. Test Files
+| File | Purpose |
+|------|---------|
+| tests/test_expirywise.py | Core features: validation, status, OCR parsing, recommendations, recipes, routes |
+| tests/test_error_handling.py | Global error handlers (400, 404, 405, 413, 500) |
+
+## 6. Error Handling Test Cases
+| ID | Test name | Input | Expected result | Type |
+|----|-----------|-------|-----------------|------|
+| EH01 | test_unknown_route_returns_404 | GET /this-page-does-not-exist | 404, "Resource not found" | Negative |
+| EH02 | test_bad_request_returns_400 | GET /bad | 400, "Bad request" | Negative |
+| EH03 | test_wrong_method_returns_405 | GET on a POST-only URL | 405, "Method not allowed" | Negative |
+| EH04 | test_upload_too_large_returns_413 | POST body larger than the limit | 413, "File too large" | Negative |
+| EH05 | test_server_crash_returns_500 | Route raises an exception | 500, "Something went wrong" | Negative |
+| EH06 | test_real_app_unknown_route_404 | GET /nope on the real app | 404 | Negative |
+| EH07 | test_real_app_delete_requires_post | GET /delete/1 | 405 | Negative |
+| EH08 | test_invalid_barcode_lookup_returns_400 | GET /api/barcode/abc | 400, found = false | Negative |
+| EH09 | test_ocr_without_image_returns_400 | POST /api/ocr with no file | 400, "No image uploaded" | Negative |
+
+## 7. Error Handling Design (Error Boundaries)
+Global handlers are defined in `error_handlers.py` and attached with
+`register_error_handlers(app)`. Local handling is done with `try/except`
+around risky operations.
+
+| Layer | Failure | How it is handled | User sees |
+|-------|---------|-------------------|-----------|
+| Validation | Empty or too-long name, bad date, bad quantity | `validate_product()` returns an error message, nothing is saved | Message above the form |
+| Validation | Invalid barcode | Barcode set to None, product still saved | "Product saved, but the barcode was invalid and was ignored." |
+| Database | Corrupted date in a row | Row skipped in `get_products()` | Other products still load |
+| Barcode API | Not 6-14 digits | 400 returned before any network call | `{"found": false, "error": "Invalid barcode"}` |
+| Barcode API | Internet down, timeout, bad response | `try/except` returns 502 | "Lookup service unavailable" |
+| OCR | No file uploaded | 400 | "No image uploaded" |
+| OCR | Tesseract not installed | `RuntimeError` caught, 503 | "OCR is not installed on the server" |
+| OCR | Corrupted or unsupported image | `Exception` caught, 400 | "Could not read that image" |
+| Routes | Unknown URL | 404 handler | "Resource not found" |
+| Routes | Wrong HTTP method | 405 handler | "Method not allowed" |
+| Upload | File larger than 8 MB | 413 handler | "File too large (maximum 8 MB)" |
+| Server | Unexpected crash | 500 handler | "Something went wrong. Please try again." |
+
+## 8. Latest Test Result
+(Replace with your real numbers from `pytest -v`, for example:)
+36 passed, 1 skipped, 0 failed
+
+## 9. Skipped Test
+(Run `pytest -v -rs` to see the skipped test and its reason, then write it here.)
+
+## 10. Continuous Integration
+On every push, GitHub Actions installs the dependencies and runs
+pytest. A green tick on GitHub means all tests passed.
 ## Future Scope
 - Mobile app version
 - Push notifications
