@@ -1,3 +1,22 @@
+"""
+app.py
+Main Flask application for ExpiryWise.
+
+Responsibilities:
+  - Database access (SQLite) and table creation
+  - Validation of product input
+  - Page routes: home (add/search/filter), edit, delete, scanner, dashboard
+  - JSON API routes: barcode lookup, OCR, recipes, stats
+  - Starting the optional daily email reminder scheduler
+
+Other modules used:
+  ocr.py             reads the expiry date from a photo
+  recommendation.py  status labels and "what to do" advice
+  recipes.py         recipe ideas for a product
+  reminders.py       daily email summary
+  error_handlers.py  global 400/404/405/413/500 handlers
+"""
+
 import os
 import sqlite3
 from datetime import date
@@ -5,21 +24,32 @@ from datetime import date
 import requests
 from flask import Flask, jsonify, redirect, render_template, request
 
+from error_handlers import register_error_handlers
 from recipes import get_recipe_ideas
 from recommendation import get_recommendation, get_status
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024  # 8 MB upload limit
+register_error_handlers(app)  # attach the global error handlers
 
+# The database file can be overridden with an environment variable (used by tests).
 DATABASE = os.environ.get("EXPIRYWISE_DB", "database.db")
 CATEGORIES = ["Dairy", "Meat", "Fruits", "Vegetables", "Bakery", "Packaged", "Medicine", "Other"]
-SOON_DAYS = 5
+SOON_DAYS = 5  # a product is "Expiring Soon" when this many days or fewer remain
 BARCODE_IGNORED_MESSAGE = "Product saved, but the barcode was invalid and was ignored."
 
 
 # ---------------- DATABASE ----------------
 
 def get_db():
+    """Open a connection to the SQLite database.
+
+    rows are returned as sqlite3.Row so columns can be read by name,
+    for example row["name"].
+
+    Returns:
+        sqlite3.Connection: An open connection. The caller must close it.
+    """
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
@@ -35,6 +65,8 @@ def create_table():
             expiry_date TEXT NOT NULL
         )
     """)
+    # Databases created in Phase 1 only have id, name and expiry_date.
+    # Look at the existing columns and add any Phase 2 column that is missing.
     existing = {row["name"] for row in conn.execute("PRAGMA table_info(products)")}
     new_columns = {
         "category": "TEXT DEFAULT 'Other'",
@@ -52,10 +84,23 @@ def create_table():
 # ---------------- VALIDATION ----------------
 
 def validate_product(form):
-    """Return (clean_values, error). error is None when the input is valid.
+    """Check and clean the product form data.
 
-    clean_values["barcode_ignored"] is True when a barcode was typed in but
-    was invalid, so the caller can tell the user it was dropped.
+    Rules:
+      - name: required, at most 100 characters
+      - expiry_date: valid ISO date (YYYY-MM-DD), year between 2000 and 2100
+      - category: must be in CATEGORIES, otherwise becomes "Other"
+      - quantity: whole number from 1 to 999 (defaults to 1)
+      - barcode: optional; digits only and at most 14 long, otherwise it is
+        discarded (set to None) and the product is still saved
+
+    Args:
+        form: The submitted form data (request.form or any dict-like object).
+
+    Returns:
+        tuple: (clean_values, error). error is None when the input is valid.
+        clean_values["barcode_ignored"] is True when a barcode was typed in
+        but was invalid, so the caller can tell the user it was dropped.
     """
     name = (form.get("name") or "").strip()
     expiry_raw = (form.get("expiry_date") or "").strip()
@@ -81,6 +126,7 @@ def validate_product(form):
         return None, "Quantity must be a whole number."
     if not 1 <= quantity <= 999:
         return None, "Quantity must be between 1 and 999."
+    # An invalid barcode must not block saving, so just drop it.
     if barcode and (not barcode.isdigit() or len(barcode) > 14):
         barcode = None
         barcode_ignored = True
@@ -98,6 +144,14 @@ def validate_product(form):
 # ---------------- PRODUCT PROCESSING ----------------
 
 def get_products():
+    """Load all products from the database and add calculated fields.
+
+    For every product this adds days_left, status (Safe / Expiring Soon /
+    Expired) and a recommendation message.
+
+    Returns:
+        list[dict]: Products sorted by expiry date, soonest first.
+    """
     conn = get_db()
     rows = conn.execute("SELECT * FROM products ORDER BY expiry_date").fetchall()
     conn.close()
@@ -110,7 +164,7 @@ def get_products():
             expiry = date.fromisoformat(row["expiry_date"])
         except ValueError:
             continue  # skip rows with a corrupted date instead of crashing
-        days_left = (expiry - today).days
+        days_left = (expiry - today).days  # negative means already expired
         category = row["category"] or "Other"
         products.append({
             "id": row["id"],
@@ -130,6 +184,15 @@ def get_products():
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    """Home page: add a product (POST) and list, search and filter products (GET).
+
+    Query parameters (GET):
+        search:   part of a product name
+        status:   Safe, Expiring Soon or Expired
+        category: one of CATEGORIES
+        name, expiry_date, category, barcode: prefill the add form
+        (used by the scanner page)
+    """
     error = None
     saved_with_warning = False
     if request.method == "POST":
@@ -154,6 +217,7 @@ def index():
     all_products = get_products()
     products = all_products
 
+    # Apply the search box and the filter dropdowns.
     search = request.args.get("search", "").strip().lower()
     filter_status = request.args.get("status", "")
     filter_category = request.args.get("category", "")
@@ -192,6 +256,10 @@ def index():
 
 @app.route("/delete/<int:id>", methods=["POST"])
 def delete(id):
+    """Delete a product by id, then return to the home page.
+
+    POST only, so a product cannot be deleted by just opening a link.
+    """
     conn = get_db()
     conn.execute("DELETE FROM products WHERE id = ?", (id,))
     conn.commit()
@@ -203,6 +271,11 @@ def delete(id):
 
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
 def edit(id):
+    """Show the edit form (GET) or save the changes (POST).
+
+    If the product does not exist, the user is sent back to the home page.
+    Only the name and expiry date are updated.
+    """
     conn = get_db()
     product = conn.execute("SELECT * FROM products WHERE id = ?", (id,)).fetchone()
 
@@ -229,11 +302,20 @@ def edit(id):
 
 @app.route("/scanner")
 def scanner():
+    """Page for scanning a barcode and photographing an expiry date."""
     return render_template("scanner.html", categories=CATEGORIES)
 
 
 def map_category(raw):
-    """Map an Open Food Facts category string onto one of our categories."""
+    """Map an Open Food Facts category string onto one of our categories.
+
+    Args:
+        raw: Category text from Open Food Facts (may be None or empty).
+
+    Returns:
+        str: One of CATEGORIES. "Packaged" if text exists but nothing matches,
+        "Other" if there is no text at all.
+    """
     text = (raw or "").lower()
     rules = [
         ("Dairy", ("dairy", "milk", "cheese", "yogurt", "yoghurt", "butter", "curd")),
@@ -250,7 +332,15 @@ def map_category(raw):
 
 @app.route("/api/barcode/<code>")
 def barcode_lookup(code):
-    """Look a barcode up on Open Food Facts and return the product name/category."""
+    """Look a barcode up on Open Food Facts and return the product name/category.
+
+    Responses:
+        200  {"found": true, "name": ..., "category": ...}
+        200  {"found": false}                    barcode not in the database
+        400  {"found": false, "error": ...}      barcode is not 6-14 digits
+        502  {"found": false, "error": ...}      lookup service unreachable
+    """
+    # Reject anything that is not 6 to 14 digits before calling the network.
     if not code.isdigit() or not 6 <= len(code) <= 14:
         return jsonify({"found": False, "error": "Invalid barcode"}), 400
     try:
@@ -262,6 +352,7 @@ def barcode_lookup(code):
         )
         data = response.json()
     except (requests.RequestException, ValueError):
+        # No internet, timeout, or the service returned something that is not JSON.
         return jsonify({"found": False, "error": "Lookup service unavailable"}), 502
     if data.get("status") != 1:
         return jsonify({"found": False})
@@ -269,6 +360,7 @@ def barcode_lookup(code):
     product = data.get("product", {})
     name = (product.get("product_name") or "").strip()
     brand = (product.get("brands") or "").split(",")[0].strip()
+    # Add the brand in front of the name unless the name already contains it.
     if brand and brand.lower() not in name.lower():
         name = f"{brand} {name}".strip()
     return jsonify({
@@ -280,8 +372,16 @@ def barcode_lookup(code):
 
 @app.route("/api/ocr", methods=["POST"])
 def ocr_expiry():
-    """Read an expiry date from an uploaded photo of the packaging."""
-    import ocr
+    """Read an expiry date from an uploaded photo of the packaging.
+
+    Expects a multipart form with a file field named "image".
+
+    Responses:
+        200  {"expiry_date": "YYYY-MM-DD" or null, "raw_text": ...}
+        400  no image uploaded, or the image could not be read
+        503  OCR (Tesseract) is not installed on the server
+    """
+    import ocr  # imported here so the app still starts without OCR libraries
 
     file = request.files.get("image")
     if not file or not file.filename:
@@ -291,6 +391,7 @@ def ocr_expiry():
     except RuntimeError:
         return jsonify({"error": "OCR is not installed on the server"}), 503
     except Exception:
+        # Corrupted file, unsupported format, etc.
         return jsonify({"error": "Could not read that image"}), 400
     return jsonify({"expiry_date": expiry, "raw_text": text.strip()[:500]})
 
@@ -299,6 +400,7 @@ def ocr_expiry():
 
 @app.route("/dashboard")
 def dashboard():
+    """Dashboard page: counts by status and category, plus items to use first."""
     products = get_products()
     by_status = {"Safe": 0, "Expiring Soon": 0, "Expired": 0}
     by_category = {}
@@ -324,6 +426,10 @@ def dashboard():
 
 @app.route("/api/recipes/<path:product_name>")
 def recipes(product_name):
+    """Return recipe ideas for a product name as JSON.
+
+    Response: {"product": <name>, "recipes": [...]}
+    """
     return jsonify({"product": product_name, "recipes": get_recipe_ideas(product_name)})
 
 
@@ -331,6 +437,7 @@ def recipes(product_name):
 
 @app.route("/api/stats")
 def stats():
+    """Return product counts as JSON: total, by status and by category."""
     products = get_products()
     by_status = {"Safe": 0, "Expiring Soon": 0, "Expired": 0}
     by_category = {}
@@ -347,7 +454,11 @@ def stats():
 # ---------------- START APP ----------------
 
 def start_reminder_scheduler():
-    """Send a daily summary email at 08:00 if SMTP credentials are configured."""
+    """Send a daily summary email at 08:00 if SMTP credentials are configured.
+
+    Needs the environment variables SMTP_USER and SMTP_PASS. Without them the
+    scheduler is not started and the app runs normally.
+    """
     from apscheduler.schedulers.background import BackgroundScheduler
     import reminders
 
