@@ -86,7 +86,7 @@ if (document.getElementById("statusChart") && typeof Chart !== "undefined") {
     type: "doughnut",
     data: {
       labels: Object.keys(statusData),
-      datasets: [{ data: Object.values(statusData), backgroundColor: ["#2e7d32", "#ef6c00", "#c62828"] }]
+      datasets: [{ datasets: [{ data: Object.values(statusData), backgroundColor: Object.keys(statusData).map(k => ({"Safe": "#2e7d32", "Expiring Soon": "#ef6c00", "Expired": "#c62828"}[k])) }]
     }
   });
   new Chart(document.getElementById("categoryChart"), {
