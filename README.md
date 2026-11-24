@@ -1,124 +1,197 @@
-# ExpiryWise
+ExpiryWise
+![Tests](https://github.com/prasanthika2008-lgtm/ExpiryWise/actions/workflows/tests.yml/badge.svg)
+Smart Food Expiry Tracking and Food Waste Reduction System
+ExpiryWise is a Flask-based web application that helps users manage food and household product expiry dates. It reduces waste by tracking expiry dates, highlighting products that need attention, and suggesting how to use them.
+It combines barcode lookup, OCR-based expiry date extraction, email reminders, recipe suggestions and a statistics dashboard in one platform.
+Project Status
+Phase	Scope	Status
+Phase 1	Core product management and expiry tracking	Completed
+Phase 2	Barcode, OCR, reminders, recipes, dashboard, testing, CI	Completed
+Phase 3	Authentication, waste analytics, security hardening, Docker	Planned
+Features
+Phase 1 – Core Features
+Add, view, edit and delete products.
+Track product expiry dates and calculate remaining days.
+Display Safe, Expiring Soon and Expired statuses.
+Search products by name and filter by status.
+Rule-based recommendations.
+Phase 2 – Advanced Features
+Extended product details: category, quantity and barcode.
+Product lookup using the Open Food Facts API.
+Barcode scanning.
+OCR expiry date extraction from product images (Tesseract).
+Daily email reminders (APScheduler + SMTP).
+Category-aware recommendations.
+Dashboard with product statistics.
+Recipe suggestions using TheMealDB API.
+Input validation and centralized error handling.
+Automated tests (pytest) and Continuous Integration (GitHub Actions).
+Phase 3 – Planned Features
+#	Feature	Description
+1	User authentication	Register, login and logout. Each user sees only their own products. Passwords stored as hashes.
+2	Mark as Used / Wasted	Users record what happened to a product instead of only deleting it.
+3	Waste analytics	Monthly used vs wasted chart and waste percentage, built from the Used/Wasted records.
+4	Security hardening	CSRF protection on all forms, `SECRET_KEY` from environment, `debug` off in production, secure session cookies.
+5	CSV export	Download the product list as a CSV file.
+6	Docker support	`Dockerfile` and `docker-compose.yml` so the app runs with one command, with Tesseract included.
+7	Phase 3 tests	Automated tests for every item above (see TESTING.md).
+Phase 3 is a plan. Items move to "Completed" only after the code is merged and its tests pass.
+Expiry Status Rules
+Status	Condition
+Safe	More than 5 days remaining
+Expiring Soon	0 to 5 days remaining
+Expired	Expiry date has passed
+Technology Stack
+Technology	Purpose
+Python, Flask	Backend
+SQLite	Database
+HTML, CSS, JavaScript	Frontend
+Tesseract OCR, Pillow, pytesseract	Expiry date extraction
+Open Food Facts API	Barcode product lookup
+TheMealDB API	Recipe suggestions
+APScheduler, SMTP	Email reminders
+pytest, pytest-cov	Testing and coverage
+GitHub Actions	Continuous Integration
+Flask-Login, Flask-WTF (Phase 3)	Authentication and CSRF protection
+Docker, gunicorn (Phase 3)	Deployment
+Architecture
+```text
+                 USER
+                   |
+                   v
+             WEB INTERFACE
+          HTML / CSS / JavaScript
+                   |
+                   v
+              FLASK APP (app.py)
+                   |
+       +-----------+-----------+
+       |           |           |
+       v           v           v
+  PRODUCT       OCR       RECOMMENDATION
+ MANAGEMENT   PROCESSING      MODULE
+       |           |
+       v           v
+    SQLite     Tesseract
+   Database
+       |
+       +-----------------------+
+       |                       |
+       v                       v
+ BARCODE LOOKUP           RECIPE MODULE
+ Open Food Facts           TheMealDB
+       |
+       v
+ REMINDER MODULE (APScheduler + SMTP)
+       |
+       v
+    DASHBOARD
 
-ExpiryWise is a web app that tracks the expiry dates of food and household
-products, warns you before they expire, reads dates from photos, and
-suggests recipes to reduce waste.
-
-## Features
-- Add, edit, delete, search and filter products
-- Status labels: Safe, Expiring Soon (5 days or fewer) and Expired
-- Barcode lookup using the Open Food Facts database
-- Expiry date reading from a photo using OCR (Tesseract)
-- Recommendations and recipe ideas for items close to expiry
-- Dashboard with counts by status and category
-- Optional daily email reminders at 08:00
-
-## Tech Stack
-Python, Flask, SQLite, Pillow, pytesseract (Tesseract OCR), requests,
-APScheduler, pytest, GitHub Actions
-
-## Project Structure
+ Phase 3 adds: AUTH layer (login) in front of the app,
+ and an ANALYTICS module reading Used/Wasted records.
 ```
+Project Structure
+```text
 ExpiryWise/
-├── app.py               # routes, database access, validation
-├── ocr.py               # reads the expiry date from an image
-├── recommendation.py    # status labels and advice
-├── recipes.py           # recipe ideas
-├── reminders.py         # daily email reminders
-├── error_handlers.py    # global error handlers
-├── templates/           # HTML pages
-├── tests/               # pytest tests
-├── docs/TESTING.md      # testing and error handling guide
+├── .github/workflows/tests.yml
+├── templates/
+├── tests/
+│   ├── test_expirywise.py
+│   └── test_error_handling.py
+├── app.py
+├── ocr.py
+├── recommendation.py
+├── recipes.py
+├── reminders.py
+├── error_handlers.py
 ├── requirements.txt
-└── .github/workflows/tests.yml
+├── README.md
+└── TESTING.md
 ```
-
-## Installation
-```
-git clone https://github.com/prasanthika2008-lgtm/ExpiryWise
+Phase 3 will add `auth.py`, `analytics.py`, `Dockerfile`, `docker-compose.yml` and `tests/test_phase3.py`.
+Installation and Setup
+1. Clone and open the project
+```bash
+git clone https://github.com/prasanthika2008-lgtm/ExpiryWise.git
 cd ExpiryWise
+```
+2. Create and activate a virtual environment
+```bash
 python -m venv venv
+```
+Windows:
+```bash
 venv\Scripts\activate
+```
+macOS / Linux:
+```bash
+source venv/bin/activate
+```
+3. Install dependencies
+```bash
 pip install -r requirements.txt
+```
+4. Install Tesseract OCR (needed only for OCR)
+Windows: https://github.com/UB-Mannheim/tesseract/wiki
+Ubuntu: `sudo apt install tesseract-ocr`
+macOS: `brew install tesseract`
+If Tesseract is missing, the OCR endpoint returns a "service unavailable" response and the rest of the app still works.
+5. Run the application
+```bash
 python app.py
 ```
-Then open http://127.0.0.1:5000 in your browser.
-
-For OCR, install [Tesseract](https://github.com/UB-Mannheim/tesseract/wiki).
-On Windows the default path `C:\Program Files\Tesseract-OCR\tesseract.exe`
-is detected automatically.
-
-## Configuration
-| Variable | Purpose | Default |
-|----------|---------|---------|
-| EXPIRYWISE_DB | Database file path | database.db |
-| FLASK_DEBUG | Set to 1 for debug mode | off |
-| SMTP_USER, SMTP_PASS | Enable daily email reminders | disabled |
-
-## API Endpoints
-| Method | Endpoint | Description | Success | Errors |
-|--------|----------|-------------|---------|--------|
-| GET | `/` | Home page: product list with search and filters. Query params: `search`, `status`, `category`; `name`, `expiry_date`, `category`, `barcode` prefill the add form | 200 HTML | 500 |
-| POST | `/` | Add a product. Form fields: `name`, `expiry_date`, `category`, `quantity`, `barcode` | 302 redirect to `/` | 200 HTML with message if validation fails |
-| GET, POST | `/edit/<id>` | Show or save the edit form (name and expiry date). Unknown id redirects to `/` | 200 HTML / 302 | 200 HTML with message if validation fails |
-| POST | `/delete/<id>` | Delete a product | 302 redirect to `/` | 405 if not POST |
-| GET | `/scanner` | Scanner page (barcode and expiry photo) | 200 HTML | 500 |
-| GET | `/dashboard` | Dashboard with counts and "use first" items | 200 HTML | 500 |
-| GET | `/api/barcode/<code>` | Look up a 6-14 digit barcode | 200 JSON `{found, name, category}` | 400 invalid barcode, 502 service unavailable |
-| POST | `/api/ocr` | Read an expiry date from an image (multipart field `image`) | 200 JSON `{expiry_date, raw_text}` | 400 no or unreadable image, 413 over 8 MB, 503 OCR not installed |
-| GET | `/api/recipes/<product_name>` | Recipe ideas for a product | 200 JSON `{product, recipes}` | 500 |
-| GET | `/api/stats` | Counts by status and category | 200 JSON `{total, by_status, by_category}` | 500 |
-
-### Example: barcode lookup
+Open http://127.0.0.1:5000
+Configuration (Environment Variables)
+Variable	Required	Purpose
+`SMTP_USER`	Optional	Email account used to send reminders
+`SMTP_PASS`	Optional	Gmail App Password (not your normal password)
+`REMINDER_TO`	Optional	Address that receives reminders
+`SECRET_KEY`	Phase 3	Session and CSRF signing key
+Never commit these values to the repository.
+API Endpoints
+Current
+Method	Endpoint	Description
+GET	`/`	Home page
+POST	`/`	Add product
+GET/POST	`/edit/<id>`	Edit product
+POST	`/delete/<id>`	Delete product
+GET	`/scanner`	Scanner page
+GET	`/dashboard`	Dashboard
+GET	`/api/barcode/<code>`	Barcode lookup
+POST	`/api/ocr`	OCR date extraction
+GET	`/api/recipes/<product>`	Recipe suggestions
+GET	`/api/stats`	Product statistics
+Planned (Phase 3)
+Method	Endpoint	Description
+GET/POST	`/register`	Create an account
+GET/POST	`/login`	Log in
+POST	`/logout`	Log out
+POST	`/products/<id>/used`	Mark a product as used
+POST	`/products/<id>/wasted`	Mark a product as wasted
+GET	`/analytics`	Waste analytics page
+GET	`/export.csv`	Download products as CSV
+Testing
+```bash
+python -m pytest -v
+python -m pytest -v -rs
+python -m pytest --cov=. --cov-report=term-missing
 ```
-GET /api/barcode/8901234567890
-{"found": true, "name": "Brand Product", "category": "Packaged"}
-```
-
-### Example: stats
-```
-GET /api/stats
-{"total": 5,
- "by_status": {"Safe": 3, "Expiring Soon": 1, "Expired": 1},
- "by_category": {"Dairy": 2, "Bakery": 3}}
-```
-
-## Database Schema
-SQLite database with one table. It is created automatically on first run
-by `create_table()`, which also adds missing columns to databases created
-in Phase 1.
-
-### Table: `products`
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | INTEGER | PRIMARY KEY, AUTOINCREMENT | Unique product ID |
-| name | TEXT | NOT NULL | Product name (1-100 characters) |
-| expiry_date | TEXT | NOT NULL | Expiry date as `YYYY-MM-DD` |
-| category | TEXT | DEFAULT 'Other' | Dairy, Meat, Fruits, Vegetables, Bakery, Packaged, Medicine or Other |
-| quantity | INTEGER | DEFAULT 1 | Number of items (1-999) |
-| barcode | TEXT | NULL allowed | Digits only, at most 14; NULL if missing or invalid |
-| added_date | TEXT | NULL allowed | Date the product was added, `YYYY-MM-DD` |
-
-`days_left`, `status` and `recommendation` are calculated when products are
-loaded and are not stored in the database.
-
-## Input Validation
-| Field | Rule | If it fails |
-|-------|------|-------------|
-| name | Required, at most 100 characters | Error message, not saved |
-| expiry_date | Valid date, year 2000-2100 | Error message, not saved |
-| quantity | Whole number 1-999 | Error message, not saved |
-| category | Must be in the category list | Becomes "Other" |
-| barcode | Digits only, at most 14 | Set to NULL, product still saved |
-
-## Testing
-Run `pytest -v`. Full details are in [docs/TESTING.md](docs/TESTING.md).
-
-## Screenshots
-(Add 3 or 4 screenshots here: home page, scanner, dashboard.)
-
-## Future Scope
-- Mobile app version
-- Push notifications
-- Multi-user accounts
-- Updating category, quantity and barcode from the edit page
+See TESTING.md for test cases, CI details and recorded results.
+Troubleshooting
+Problem	Fix
+OCR returns "service unavailable"	Install Tesseract and make sure it is on your PATH
+Barcode lookup fails	Check your internet connection; Open Food Facts may be temporarily down
+Emails are not sent	Check the three SMTP variables and use a Gmail App Password
+`ModuleNotFoundError`	Activate the virtual environment and run `pip install -r requirements.txt`
+Screenshots
+Add screenshots of the home page, dashboard and scanner here, for example in a `docs/screenshots/` folder.
+Future Enhancements
+Mobile application.
+Push notifications.
+AI-powered recipe recommendations.
+Cloud deployment and synchronization.
+Author
+Prasanthika M
+BE Computer Science and Engineering, 2nd Year
+Repository
+https://github.com/prasanthika2008-lgtm/ExpiryWise
